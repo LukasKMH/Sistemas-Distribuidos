@@ -1,8 +1,13 @@
 package servidor;
 
 import java.net.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.google.gson.Gson;
+
 import cliente.Login;
+
 import java.io.*;
 
 public class EchoServidor extends Thread {
@@ -47,13 +52,23 @@ public class EchoServidor extends Thread {
 		try {
 			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
+			// String recebida do cliente
 			String inputLine;
 
 			while ((inputLine = in.readLine()) != null) {
+				// Imprime o json
 				System.out.println("Servidor: " + inputLine);
-				out.println("Sucesso");
+				Gson gson = new Gson();
+				Login cliente = gson.fromJson(inputLine, Login.class);
+				cliente.imprimirDados();
 				
+				// Mensagem retornada ao cliente
+				int codigo = validarDados(cliente) ? 200 : 500;
+			
+				out.println(codigo);
+
+
+		
 
 				if (inputLine.equals("Até logo."))
 					break;
@@ -67,4 +82,36 @@ public class EchoServidor extends Thread {
 			System.exit(1);
 		}
 	}
+
+	
+
+	public boolean validarDados(Login cliente) {
+		return validarNome(cliente.getNome()) && validarEmail(cliente.getEmail()) && validarSenha(cliente.getSenha());
+	}
+	
+	public static boolean validarNome(String nome) {
+		Pattern padrao = Pattern.compile("^[a-zA-Z]{3,32}$");
+		Matcher matcher = padrao.matcher(nome);
+		return matcher.matches();
+	}
+
+	public static boolean validarEmail(String email) {
+		// Verifica se o email tem no mínimo 16 e no máximo 50 caracteres
+		if (email.length() < 16 || email.length() > 50) {
+			return false;
+		}
+
+		// Verifica se o email contém um "@" e um "."
+		if (!email.contains("@") || !email.contains(".")) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean validarSenha(String senha) {
+		// Retorna true se a senha tem no mínimo 8 e no máximo 32 caracteres
+		return senha.length() >= 8 && senha.length() <= 32 ? true : false;
+	}
+
 }

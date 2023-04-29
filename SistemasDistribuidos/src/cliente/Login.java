@@ -10,6 +10,14 @@ public class Login {
 
 	}
 
+	public int getId_operacao() {
+		return id_operacao;
+	}
+
+	public void setId_operacao(int id_operacao) {
+		this.id_operacao = id_operacao;
+	}
+
 	public String getNome() {
 		return nome;
 	}
@@ -34,14 +42,6 @@ public class Login {
 		this.id_operacao = id;
 	}
 
-	public int getId_operacao() {
-		return id_operacao;
-	}
-
-	public void setId_operacao(int id_operacao) {
-		this.id_operacao = id_operacao;
-	}
-
 	public String getSenha() {
 		return senha;
 	}
@@ -49,5 +49,12 @@ public class Login {
 	public void setSenha(String senha) {
 		this.senha = senha;
 	}
+	
+	public void imprimirDados() {
+	    System.out.println("Nome: " + this.nome);
+	    System.out.println("Email: " + this.email);
+	    System.out.println("Senha: " + this.senha);
+	}
+
 
 }
