@@ -41,7 +41,7 @@ public class EchoCliente {
 		Gson gson = new Gson();
 
 		while (ligado) {
-			System.out.println("1 - Cadastrar: \n2- Atualizar Cadastro: \n3 - Login: \n0 - Sair:\n");
+			System.out.println("1 - Cadastrar: \n2 - Atualizar Cadastro: \n3 - Login: \n0 - Sair:\n");
 			operacao = scanner.nextInt();
 			switch (operacao) {
 			case 1: {
@@ -55,9 +55,9 @@ public class EchoCliente {
 				System.out.println("Senha: ");
 				cliente1.setSenha(stdIn.readLine());
 				String gson1 = gson.toJson(cliente1);
-				FileWriter writer = new FileWriter("dados.json");
-				writer.write(gson1);
-				writer.close();
+//				FileWriter writer = new FileWriter("dados.json");
+//				writer.write(gson1);
+//				writer.close();
 				saida.println(gson1);
 				break;
 			}

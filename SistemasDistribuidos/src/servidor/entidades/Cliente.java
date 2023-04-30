@@ -1,21 +1,29 @@
-package cliente;
+package servidor.entidades;
 
-public class Login {
-	private int id_operacao;
+public class Cliente {
+
+	private int id;
 	private String nome;
 	private String email;
 	private String senha;
 	private String token = null;
-	public Login() {
+
+	public Cliente() {
 
 	}
 
-	public int getId_operacao() {
-		return id_operacao;
+	public void imprimirDados() {
+		System.out.println("Nome: " + this.nome);
+		System.out.println("Email: " + this.email);
+		System.out.println("Senha: " + this.senha);
 	}
 
-	public void setId_operacao(int id_operacao) {
-		this.id_operacao = id_operacao;
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public String getNome() {
@@ -34,26 +42,12 @@ public class Login {
 		this.email = email;
 	}
 
-	public int getId_Operacao() {
-		return id_operacao;
-	}
-
-	public void setId_Operacao(int id) {
-		this.id_operacao = id;
-	}
-
 	public String getSenha() {
 		return senha;
 	}
 
 	public void setSenha(String senha) {
 		this.senha = senha;
-	}
-	
-	public void imprimirDados() {
-	    System.out.println("Nome: " + this.nome);
-	    System.out.println("Email: " + this.email);
-	    System.out.println("Senha: " + this.senha);
 	}
 
 	public String getToken() {
@@ -63,6 +57,5 @@ public class Login {
 	public void setToken(String token) {
 		this.token = token;
 	}
-
 
 }

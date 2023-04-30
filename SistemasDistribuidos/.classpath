@@ -6,6 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/gson"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jdbc"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="C:/Users/Lukas Kenji/Java-Lib/Gson/gson-2.10.1.jar"/>
 	<classpathentry kind="output" path="bin"/>

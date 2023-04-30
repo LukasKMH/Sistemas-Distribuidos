@@ -1,12 +1,19 @@
 package servidor;
 
 import java.net.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
-
+import com.google.gson.JsonObject;
 import cliente.Login;
+import servidor.dao.BancoDados;
+import servidor.dao.ClienteDao;
+import servidor.entidades.Cliente;
 
 import java.io.*;
 
@@ -48,6 +55,7 @@ public class EchoServidor extends Thread {
 
 	public void run() {
 		System.out.println("New Communication Thread Started");
+		
 
 		try {
 			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -59,17 +67,35 @@ public class EchoServidor extends Thread {
 				// Imprime o json
 				System.out.println("Servidor: " + inputLine);
 				Gson gson = new Gson();
-				Login cliente = gson.fromJson(inputLine, Login.class);
-				cliente.imprimirDados();
+				JsonObject dados = gson.fromJson(inputLine, JsonObject.class);
+				int operacao = dados.get("id_operacao").getAsInt();
+
+				switch(operacao) {
 				
-				// Mensagem retornada ao cliente
-				int codigo = validarDados(cliente) ? 200 : 500;
-			
-				out.println(codigo);
-
-
-		
-
+				case 1: 
+					Cliente cliente = new Cliente();
+					cliente.setNome(dados.get("nome").getAsString());
+					cliente.setEmail(dados.get("email").getAsString());
+					cliente.setSenha(dados.get("senha").getAsString());
+					cliente.setToken("adasdade");
+					Connection conexao = BancoDados.conectar();
+					new ClienteDao(conexao).cadastrar(cliente);
+					out.println("Sucesso");
+					break;
+					
+				}
+//				// Mensagem retornada ao cliente
+//				int codigo = validarDados(cliente) ? 200 : 500;
+//
+//				// Cria um objeto JsonObject
+//				JsonObject jsonObject = new JsonObject();
+//				// Adiciona algumas propriedades
+//				jsonObject.addProperty("codigo", codigo);
+//				// Converte o JsonObject em uma string JSON
+//				String json = new Gson().toJson(jsonObject);
+//				out.println(json);
+				
+				
 				if (inputLine.equals("Até logo."))
 					break;
 			}
@@ -80,15 +106,16 @@ public class EchoServidor extends Thread {
 		} catch (IOException e) {
 			System.err.println("Problem with Communication Server");
 			System.exit(1);
-		}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 	}
 
-	
-
-	public boolean validarDados(Login cliente) {
+	public boolean validarDados(Cliente cliente) {
 		return validarNome(cliente.getNome()) && validarEmail(cliente.getEmail()) && validarSenha(cliente.getSenha());
 	}
-	
+
 	public static boolean validarNome(String nome) {
 		Pattern padrao = Pattern.compile("^[a-zA-Z]{3,32}$");
 		Matcher matcher = padrao.matcher(nome);
@@ -112,6 +139,12 @@ public class EchoServidor extends Thread {
 	public static boolean validarSenha(String senha) {
 		// Retorna true se a senha tem no mínimo 8 e no máximo 32 caracteres
 		return senha.length() >= 8 && senha.length() <= 32 ? true : false;
+	}
+
+	public static void imprimirClientes(List<Login> clientes) {
+		for (Login cliente : clientes) {
+			cliente.imprimirDados();
+		}
 	}
 
 }
