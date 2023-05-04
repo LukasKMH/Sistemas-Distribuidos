@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import cliente.Login;
 import servidor.dao.BancoDados;
 import servidor.dao.ClienteDao;
 import servidor.entidades.Cliente;
@@ -24,7 +23,7 @@ public class EchoServidor extends Thread {
 		ServerSocket servidor = null;
 
 		try {
-			servidor = new ServerSocket(10008);
+			servidor = new ServerSocket(24001);
 			System.out.println("Connection Socket Created");
 			try {
 				while (true) {
@@ -55,7 +54,10 @@ public class EchoServidor extends Thread {
 
 	public void run() {
 		System.out.println("New Communication Thread Started");
-		
+		List<Cliente> listaClientes = new ArrayList<>();
+		// Cria um objeto JsonObject
+		JsonObject jsonObject = new JsonObject();
+		String retorno = "";
 
 		try {
 			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -64,38 +66,70 @@ public class EchoServidor extends Thread {
 			String inputLine;
 
 			while ((inputLine = in.readLine()) != null) {
+				
 				// Imprime o json
 				System.out.println("Servidor: " + inputLine);
 				Gson gson = new Gson();
 				JsonObject dados = gson.fromJson(inputLine, JsonObject.class);
 				int operacao = dados.get("id_operacao").getAsInt();
 
-				switch(operacao) {
-				
-				case 1: 
+				switch (operacao) {
+				case 1:
 					Cliente cliente = new Cliente();
 					cliente.setNome(dados.get("nome").getAsString());
 					cliente.setEmail(dados.get("email").getAsString());
 					cliente.setSenha(dados.get("senha").getAsString());
-					cliente.setToken("adasdade");
-					Connection conexao = BancoDados.conectar();
-					new ClienteDao(conexao).cadastrar(cliente);
-					out.println("Sucesso");
-					break;
+					cliente.setToken("");
+
+					// Mensagem retornada ao cliente
+					int codigo = validarDados(cliente) ? 200 : 500;
+
+					// Adiciona algumas propriedades
+					jsonObject.addProperty("codigo", codigo);
+					// Converte o JsonObject em uma string JSON
 					
+					if (codigo == 200) {
+						// Conecta com o banco de dados
+						Connection conexao = BancoDados.conectar();
+						new ClienteDao(conexao).cadastrar(cliente);
+
+						listaClientes.add(cliente);
+						System.out.println("Cliente cadastrado.\n");
+
+					} else {
+						System.out.println("Erro ao cadastrar cliente.\n");
+						jsonObject.addProperty("mensagem", "erro ao realizar cadastro");
+
+					}
+					retorno = new Gson().toJson(jsonObject);
+					out.println(retorno);
+
+					break;
+
+				case 3:
+					Cliente cliente1 = new Cliente();
+					String email = dados.get("email").getAsString();
+					String senha = dados.get("senha").getAsString();
+					Connection conexao2 = BancoDados.conectar();
+					cliente1 = new ClienteDao(conexao2).fazerLogin(email, senha);
+					if (cliente1 != null) {
+						jsonObject.addProperty("codigo", 200);
+						jsonObject.addProperty("token", cliente1.getToken());
+						jsonObject.addProperty("id_usuario", cliente1.getId());
+						System.out.println("Login realizado.\n");
+					}
+
+					else {
+						jsonObject.addProperty("codigo", 500);
+						jsonObject.addProperty("mensagem", "cliente nao cadastrado");
+						System.out.println("Email ou senha invalidos.\n");
+					}
+					retorno = new Gson().toJson(jsonObject);
+					out.println(retorno);
+					break;
+
 				}
-//				// Mensagem retornada ao cliente
-//				int codigo = validarDados(cliente) ? 200 : 500;
-//
-//				// Cria um objeto JsonObject
-//				JsonObject jsonObject = new JsonObject();
-//				// Adiciona algumas propriedades
-//				jsonObject.addProperty("codigo", codigo);
-//				// Converte o JsonObject em uma string JSON
-//				String json = new Gson().toJson(jsonObject);
-//				out.println(json);
-				
-				
+
 				if (inputLine.equals("Até logo."))
 					break;
 			}
@@ -109,7 +143,7 @@ public class EchoServidor extends Thread {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
 	}
 
 	public boolean validarDados(Cliente cliente) {
@@ -141,8 +175,9 @@ public class EchoServidor extends Thread {
 		return senha.length() >= 8 && senha.length() <= 32 ? true : false;
 	}
 
-	public static void imprimirClientes(List<Login> clientes) {
-		for (Login cliente : clientes) {
+	public static void imprimirClientes(List<Cliente> listaClientes) {
+		for (Cliente cliente : listaClientes) {
+			System.out.println("============");
 			cliente.imprimirDados();
 		}
 	}

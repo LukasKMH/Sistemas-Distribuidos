@@ -5,11 +5,15 @@ import java.net.*;
 import java.util.Scanner;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class EchoCliente {
 	public static void main(String[] args) throws IOException {
 
-		// 10.20.8.179
+		// 10.20.8.81 meu ip4
+		// 10.20.8.179 Leo
+		// 10.20.8.78 Salles
+		// 127.0.0.1
 		String serverHostname = new String("127.0.0.1");
 
 		if (args.length > 0)
@@ -22,7 +26,7 @@ public class EchoCliente {
 
 		// 24001
 		try {
-			echoSocket = new Socket(serverHostname, 10008);
+			echoSocket = new Socket(serverHostname, 24001);
 			saida = new PrintWriter(echoSocket.getOutputStream(), true);
 			entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
 		} catch (UnknownHostException e) {
@@ -37,28 +41,32 @@ public class EchoCliente {
 		Boolean ligado = true;
 		int operacao = 0;
 		Scanner scanner = new Scanner(System.in);
-		Login cliente1 = new Login();
-		Gson gson = new Gson();
-
+		
+//		Gson gson = new Gson();
+//		Login cliente1 = new Login();
+//		cliente1.setId_operacao(operacao);
+//		System.out.println("Email: ");
+//		cliente1.setEmail(stdIn.readLine());
+//		System.out.println("Senha: ");
+//		cliente1.setSenha(stdIn.readLine());
+//		String gson1 = gson.toJson(cliente1);
+		
 		while (ligado) {
+			JsonObject jsonObject = new JsonObject();
 			System.out.println("1 - Cadastrar: \n2 - Atualizar Cadastro: \n3 - Login: \n0 - Sair:\n");
 			operacao = scanner.nextInt();
 			switch (operacao) {
 			case 1: {
 
-				System.out.println("====== Cadastrar ======");
-				cliente1.setId_Operacao(operacao);
+				System.out.println("======== Cadastrar ========");
+				jsonObject.addProperty("id_operacao", operacao);
 				System.out.println("Nome: ");
-				cliente1.setNome(stdIn.readLine());
+				jsonObject.addProperty("nome", stdIn.readLine());
 				System.out.println("Email: ");
-				cliente1.setEmail(stdIn.readLine());
+				jsonObject.addProperty("email", stdIn.readLine());
 				System.out.println("Senha: ");
-				cliente1.setSenha(stdIn.readLine());
-				String gson1 = gson.toJson(cliente1);
-//				FileWriter writer = new FileWriter("dados.json");
-//				writer.write(gson1);
-//				writer.close();
-				saida.println(gson1);
+				jsonObject.addProperty("senha", stdIn.readLine());
+				saida.println(jsonObject);
 				break;
 			}
 
@@ -69,8 +77,13 @@ public class EchoCliente {
 			}
 
 			case 3: {
-				System.out.println("====== Login ======");
-
+				System.out.println("======== Login ========");
+				jsonObject.addProperty("id_operacao", operacao);
+				System.out.println("Email: ");
+				jsonObject.addProperty("email", stdIn.readLine());
+				System.out.println("Senha: ");
+				jsonObject.addProperty("senha", stdIn.readLine());
+				saida.println(jsonObject);
 				break;
 
 			}
@@ -82,7 +95,7 @@ public class EchoCliente {
 			}
 
 			}
-			System.out.println("Respota servidor: " + entrada.readLine());
+			System.out.println("\nRespota servidor: " + entrada.readLine());
 
 			if (!ligado) {
 				break;

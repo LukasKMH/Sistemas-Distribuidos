@@ -5,9 +5,15 @@ public class Login {
 	private String nome;
 	private String email;
 	private String senha;
-	private String token = null;
+
 	public Login() {
 
+	}
+
+	public void imprimirDados() {
+		System.out.println("Nome: " + this.nome);
+		System.out.println("Email: " + this.email);
+		System.out.println("Senha: " + this.senha);
 	}
 
 	public int getId_operacao() {
@@ -34,14 +40,6 @@ public class Login {
 		this.email = email;
 	}
 
-	public int getId_Operacao() {
-		return id_operacao;
-	}
-
-	public void setId_Operacao(int id) {
-		this.id_operacao = id;
-	}
-
 	public String getSenha() {
 		return senha;
 	}
@@ -49,20 +47,5 @@ public class Login {
 	public void setSenha(String senha) {
 		this.senha = senha;
 	}
-	
-	public void imprimirDados() {
-	    System.out.println("Nome: " + this.nome);
-	    System.out.println("Email: " + this.email);
-	    System.out.println("Senha: " + this.senha);
-	}
-
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
-	}
-
 
 }

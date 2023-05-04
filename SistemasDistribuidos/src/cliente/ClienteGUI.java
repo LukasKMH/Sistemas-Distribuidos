@@ -13,10 +13,8 @@ import com.google.gson.Gson;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -55,7 +53,7 @@ public class ClienteGUI {
 
 		Login cliente1 = new Login();
 		Gson gson = new Gson();
-		cliente1.setId_Operacao(1);
+		cliente1.setId_operacao(1);
 		cliente1.setNome(txtNome.getText());
 		cliente1.setEmail(txtEmail.getText());
 		cliente1.setSenha(txtSenha.getText());
