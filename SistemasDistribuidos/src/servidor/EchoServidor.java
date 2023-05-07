@@ -56,8 +56,6 @@ public class EchoServidor extends Thread {
 		System.out.println("New Communication Thread Started");
 		List<Cliente> listaClientes = new ArrayList<>();
 		// Cria um objeto JsonObject
-		JsonObject jsonObject = new JsonObject();
-		String retorno = "";
 
 		try {
 			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -66,7 +64,11 @@ public class EchoServidor extends Thread {
 			String inputLine;
 
 			while ((inputLine = in.readLine()) != null) {
-				
+				String retorno = "";
+				Cliente cliente = new Cliente();
+				JsonObject jsonObject = new JsonObject();
+				Connection conexao;
+
 				// Imprime o json
 				System.out.println("Servidor: " + inputLine);
 				Gson gson = new Gson();
@@ -75,7 +77,6 @@ public class EchoServidor extends Thread {
 
 				switch (operacao) {
 				case 1:
-					Cliente cliente = new Cliente();
 					cliente.setNome(dados.get("nome").getAsString());
 					cliente.setEmail(dados.get("email").getAsString());
 					cliente.setSenha(dados.get("senha").getAsString());
@@ -87,10 +88,10 @@ public class EchoServidor extends Thread {
 					// Adiciona algumas propriedades
 					jsonObject.addProperty("codigo", codigo);
 					// Converte o JsonObject em uma string JSON
-					
+
 					if (codigo == 200) {
 						// Conecta com o banco de dados
-						Connection conexao = BancoDados.conectar();
+						conexao = BancoDados.conectar();
 						new ClienteDao(conexao).cadastrar(cliente);
 
 						listaClientes.add(cliente);
@@ -98,7 +99,7 @@ public class EchoServidor extends Thread {
 
 					} else {
 						System.out.println("Erro ao cadastrar cliente.\n");
-						jsonObject.addProperty("mensagem", "erro ao realizar cadastro");
+						jsonObject.addProperty("mensagem", "Erro ao realizar cadastro");
 
 					}
 					retorno = new Gson().toJson(jsonObject);
@@ -107,25 +108,41 @@ public class EchoServidor extends Thread {
 					break;
 
 				case 3:
-					Cliente cliente1 = new Cliente();
 					String email = dados.get("email").getAsString();
 					String senha = dados.get("senha").getAsString();
-					Connection conexao2 = BancoDados.conectar();
-					cliente1 = new ClienteDao(conexao2).fazerLogin(email, senha);
-					if (cliente1 != null) {
+					conexao = BancoDados.conectar();
+					cliente = new ClienteDao(conexao).fazerLogin(email, senha);
+					if (cliente != null) {
+						// cliente.imprimirDados();
 						jsonObject.addProperty("codigo", 200);
-						jsonObject.addProperty("token", cliente1.getToken());
-						jsonObject.addProperty("id_usuario", cliente1.getId());
+						jsonObject.addProperty("token", cliente.getToken());
+						jsonObject.addProperty("id_usuario", cliente.getId());
+						//cliente.imprimirDados();
 						System.out.println("Login realizado.\n");
-					}
-
-					else {
+					} else {
 						jsonObject.addProperty("codigo", 500);
-						jsonObject.addProperty("mensagem", "cliente nao cadastrado");
+						jsonObject.addProperty("mensagem", "Cliente nao cadastrado");
 						System.out.println("Email ou senha invalidos.\n");
 					}
 					retorno = new Gson().toJson(jsonObject);
 					out.println(retorno);
+					break;
+
+				case 9:
+//					String email = dados.get("email").getAsString();
+//					String senha = dados.get("senha").getAsString();
+//					conexao = BancoDados.conectar();
+//					cliente = new ClienteDao(conexao).fazerLogin(email, senha);
+//					if (cliente != null) {
+//						cliente.imprimirDados();
+//						jsonObject.addProperty("codigo", 200);
+//						jsonObject.addProperty("token", cliente.getToken());
+//						cliente.imprimirDados();
+//						jsonObject.addProperty("id_usuario", cliente.getId());
+//						System.out.println("Login realizado.\n");
+//					}
+//
+//			
 					break;
 
 				}
@@ -163,7 +180,7 @@ public class EchoServidor extends Thread {
 		}
 
 		// Verifica se o email contém um "@" e um "."
-		if (!email.contains("@") || !email.contains(".")) {
+		if (!email.contains("@")) {
 			return false;
 		}
 

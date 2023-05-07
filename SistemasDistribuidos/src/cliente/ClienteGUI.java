@@ -53,10 +53,10 @@ public class ClienteGUI {
 
 		Login cliente1 = new Login();
 		Gson gson = new Gson();
-		cliente1.setId_operacao(1);
-		cliente1.setNome(txtNome.getText());
-		cliente1.setEmail(txtEmail.getText());
-		cliente1.setSenha(txtSenha.getText());
+		//cliente1.setId_operacao(1);
+		//cliente1.setNome(txtNome.getText());
+//		cliente1.setEmail(txtEmail.getText());
+//		cliente1.setSenha(txtSenha.getText());
 		String gson1 = gson.toJson(cliente1);
 		out.println(gson1);
 

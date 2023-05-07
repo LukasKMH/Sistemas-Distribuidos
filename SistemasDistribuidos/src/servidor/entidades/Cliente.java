@@ -6,16 +6,18 @@ public class Cliente {
 	private String nome;
 	private String email;
 	private String senha;
-	private String token = null;
+	private String token;
 
 	public Cliente() {
 
 	}
 
 	public void imprimirDados() {
+		System.out.println("ID: " + this.id);
 		System.out.println("Nome: " + this.nome);
 		System.out.println("Email: " + this.email);
 		System.out.println("Senha: " + this.senha);
+		System.out.println("Token: " + this.token);
 	}
 
 	public int getId() {
@@ -57,5 +59,6 @@ public class Cliente {
 	public void setToken(String token) {
 		this.token = token;
 	}
+
 
 }

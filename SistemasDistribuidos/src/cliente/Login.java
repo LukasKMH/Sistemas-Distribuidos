@@ -1,51 +1,32 @@
 package cliente;
 
 public class Login {
-	private int id_operacao;
-	private String nome;
-	private String email;
-	private String senha;
+	private int id_usuario;
+	private String token;
 
 	public Login() {
 
 	}
 
 	public void imprimirDados() {
-		System.out.println("Nome: " + this.nome);
-		System.out.println("Email: " + this.email);
-		System.out.println("Senha: " + this.senha);
+		System.out.println("Nome: " + this.id_usuario);
+		System.out.println("Senha: " + this.token);
 	}
 
-	public int getId_operacao() {
-		return id_operacao;
+	public int getId() {
+		return id_usuario;
 	}
 
-	public void setId_operacao(int id_operacao) {
-		this.id_operacao = id_operacao;
+	public void setId(int id) {
+		this.id_usuario = id;
 	}
 
-	public String getNome() {
-		return nome;
+	public String getToken() {
+		return token;
 	}
 
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getSenha() {
-		return senha;
-	}
-
-	public void setSenha(String senha) {
-		this.senha = senha;
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 }
