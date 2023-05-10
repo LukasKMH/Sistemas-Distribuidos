@@ -60,7 +60,6 @@ public class ClienteDao {
 				// Inserir o token no banco de dados e no objeto Cliente
 				inserirTokenCliente(cliente);
 
-				cliente.imprimirDados();
 				return cliente;
 			}
 		} finally {
@@ -94,8 +93,8 @@ public class ClienteDao {
 
 	public String gerarToken() {
 
-		String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-				+ "0123456789" + "!@#$%^&*()_+-=[]{}\\|;:'\",.<>?";
+		String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789"
+				+ "!@#$%^&*()_+-=[]{}\\|;:'\",.<>?";
 		Random random = new SecureRandom();
 		int tamanho = 16 + random.nextInt(21);
 		StringBuilder token = new StringBuilder(tamanho);
