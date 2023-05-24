@@ -53,7 +53,7 @@ public class IP_Server extends JFrame {
 		getContentPane().add(textField);
 		textField.setColumns(10);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 280, 260);
+		setBounds(100, 100, 260, 260);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
@@ -61,12 +61,12 @@ public class IP_Server extends JFrame {
 		contentPane.setLayout(null);
 		
 		txtIP = new JTextField();
-		txtIP.setBounds(90, 60, 96, 20);
+		txtIP.setBounds(70, 60, 120, 20);
 		contentPane.add(txtIP);
 		txtIP.setColumns(10);
 		
 		txtPorta = new JTextField();
-		txtPorta.setBounds(90, 110, 96, 20);
+		txtPorta.setBounds(70, 110, 120, 20);
 		contentPane.add(txtPorta);
 		txtPorta.setColumns(10);
 		
@@ -100,12 +100,12 @@ public class IP_Server extends JFrame {
 		
 		JLabel lblNewLabel = new JLabel("IP");
 		lblNewLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-		lblNewLabel.setBounds(40, 60, 30, 14);
+		lblNewLabel.setBounds(25, 60, 30, 14);
 		contentPane.add(lblNewLabel);
 		
 		JLabel lblNewLabel_1 = new JLabel("Porta");
 		lblNewLabel_1.setFont(new Font("Arial", Font.PLAIN, 12));
-		lblNewLabel_1.setBounds(40, 110, 40, 14);
+		lblNewLabel_1.setBounds(25, 110, 40, 14);
 		contentPane.add(lblNewLabel_1);
 	}
 }

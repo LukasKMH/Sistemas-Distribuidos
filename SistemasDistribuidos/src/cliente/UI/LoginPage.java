@@ -1,4 +1,4 @@
-package cliente;
+package cliente.UI;
 
 import java.awt.EventQueue;
 
@@ -9,6 +9,8 @@ import java.awt.Font;
 import javax.swing.JTextField;
 
 import com.google.gson.Gson;
+
+import cliente.Login;
 
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -21,7 +23,7 @@ import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.awt.event.ActionEvent;
 
-public class ClienteGUI {
+public class LoginPage {
 
 	private static String serverHostname = new String("127.0.0.1");
 	private static PrintWriter out;
@@ -36,7 +38,7 @@ public class ClienteGUI {
 
 		System.out.println("Attemping to connect to host " + serverHostname + " on port 10008.");
 		try {
-			echoSocket = new Socket(serverHostname, 10008);
+			echoSocket = new Socket(serverHostname, 24001);
 			out = new PrintWriter(echoSocket.getOutputStream(), true);
 			resposta = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
 			System.out.println("Conectado.");
@@ -68,7 +70,7 @@ public class ClienteGUI {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					ClienteGUI window = new ClienteGUI();
+					LoginPage window = new LoginPage();
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -136,7 +138,7 @@ public class ClienteGUI {
 	/**
 	 * Create the application.
 	 */
-	public ClienteGUI() {
+	public LoginPage() {
 		initialize();
 
 	}
