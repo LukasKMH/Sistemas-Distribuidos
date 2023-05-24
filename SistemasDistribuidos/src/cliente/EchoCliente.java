@@ -27,7 +27,7 @@ public class EchoCliente {
 
 		// 26.211.0.15 Gui Radmin
 		// 10.20.8.76 Gui
-		
+
 		// 10.20.8.132 Pedro
 		// 10.40.11.114 Eduardo
 		String ipv4 = new String("127.0.0.1");
@@ -111,13 +111,11 @@ public class EchoCliente {
 					login.addProperty("token", "");
 					login.addProperty("id_usuario", "");
 				}
-			
+
 				saida.println(login);
 				System.out.println("Enviado: " + login);
 				login.addProperty("token", "");
 				login.addProperty("id_usuario", "");
-
-
 
 				break;
 
@@ -144,7 +142,7 @@ public class EchoCliente {
 			// Pegar a reposta do servidor e trasnformar em Json
 			if (operacao != 9)
 				System.out.println("ENVIADO: " + jsonObject);
-			
+
 			Gson gson = new Gson();
 			JsonObject resposta_servidor = gson.fromJson(entrada.readLine(), JsonObject.class);
 			if (resposta_servidor != null)
@@ -178,7 +176,7 @@ public class EchoCliente {
 		System.out.println("10 - Teste NUll: ");
 		System.out.println("0 - Sair: ");
 	}
-	
+
 	public static void imprimirOperacoes2() {
 
 		System.out.println("2 - Cadastrar: ");
