@@ -65,7 +65,7 @@ public class EchoServidor extends Thread {
 				String retorno_cliente = "";
 				Cliente cliente = new Cliente();
 				JsonObject jsonObject = new JsonObject();
-				Connection conexao;
+				Connection conexao = null;
 
 				// Imprime o json
 				System.out.println("ENTRADA : " + entrada_cliente);
@@ -83,7 +83,7 @@ public class EchoServidor extends Thread {
 						cliente.setToken("");
 
 						// Mensagem retornada ao cliente
-						int codigo = validarDados(cliente) ? 200 : 500;
+						int codigo = validarDados(cliente, conexao) ? 200 : 500;
 
 						// Adiciona algumas propriedades
 						jsonObject.addProperty("codigo", codigo);
@@ -181,8 +181,10 @@ public class EchoServidor extends Thread {
 		}
 	}
 
-	public boolean validarDados(Cliente cliente) {
-		return validarNome(cliente.getNome()) && validarEmail(cliente.getEmail()) && validarSenha(cliente.getSenha());
+	public boolean validarDados(Cliente cliente, Connection conexao) throws SQLException, IOException {
+		conexao = BancoDados.conectar();
+		return validarNome(cliente.getNome()) && validarEmail(cliente.getEmail()) 
+			&& new ClienteDao(conexao).verificarEmail(cliente.getEmail()) && validarSenha(cliente.getSenha());
 	}
 
 	public static boolean validarNome(String nome) {

@@ -18,6 +18,28 @@ public class ClienteDao {
 		this.conn = conn;
 	}
 
+	public boolean verificarEmail(String email) throws SQLException {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+
+		try {
+			st = conn.prepareStatement("SELECT * FROM clientes WHERE email = ?");
+			st.setString(1, email);
+			rs = st.executeQuery();
+
+			if (rs.next()) {
+				System.out.println("Email ja cadastrado.");
+				return false;
+			}
+			
+		} finally {
+			BancoDados.finalizarStatement(st);
+			BancoDados.finalizarResultSet(rs);
+			BancoDados.desconectar();
+		}
+		return true;
+	}
+
 	public void cadastrar(Cliente cliente) throws SQLException {
 
 		PreparedStatement st = null;

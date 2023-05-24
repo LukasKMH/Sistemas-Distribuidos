@@ -26,10 +26,12 @@ public class EchoCliente {
 		// 10.20.8.198 Sauter
 
 		// 26.211.0.15 Gui Radmin
-
+		// 10.20.8.76 Gui
+		
+		// 10.20.8.132 Pedro
 		// 10.40.11.114 Eduardo
-		String ipv4 = new String("10.20.8.131");
-		int porta = 20008;
+		String ipv4 = new String("127.0.0.1");
+		int porta = 24001;
 
 		Socket echoSocket = null;
 		PrintWriter saida = null;
@@ -170,9 +172,19 @@ public class EchoCliente {
 	public static void imprimirOperacoes() {
 
 		System.out.println("1 - Cadastrar: ");
+		System.out.println("2 - Atualizar cadastro: ");
 		System.out.println("3 - Login: ");
 		System.out.println("9 - Logout: ");
 		System.out.println("10 - Teste NUll: ");
+		System.out.println("0 - Sair: ");
+	}
+	
+	public static void imprimirOperacoes2() {
+
+		System.out.println("2 - Cadastrar: ");
+		System.out.println("4 - Reportar incidentes: ");
+		System.out.println("5 - Lista de incidentes: ");
+		System.out.println("9 - Logout: ");
 		System.out.println("0 - Sair: ");
 	}
 
