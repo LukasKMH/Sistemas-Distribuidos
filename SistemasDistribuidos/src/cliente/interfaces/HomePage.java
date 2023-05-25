@@ -1,4 +1,4 @@
-package cliente.UI;
+package cliente.interfaces;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -9,6 +9,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import javax.swing.JButton;
+
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,12 +28,12 @@ public class HomePage extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
-	
+
 	// Variáveis
 	static PrintWriter saida = null;
 	static BufferedReader entrada = null;
 
-	public HomePage(Socket echoSocket) {
+	public HomePage(Socket echoSocket, JsonObject login) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 269, 300);
 		contentPane = new JPanel();
@@ -43,6 +45,26 @@ public class HomePage extends JFrame {
 		JButton btnLogout = new JButton("Logout");
 		btnLogout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				try {
+					if (realizarLogout(echoSocket, login)) {
+						EventQueue.invokeLater(new Runnable() {
+							public void run() {
+								try {
+									LoginPage frame = new LoginPage(echoSocket);
+									frame.setVisible(true);
+									frame.setLocationRelativeTo(null);
+									dispose();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							}
+						});
+					}
+
+				} catch (JsonSyntaxException | IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
 		btnLogout.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -60,6 +82,22 @@ public class HomePage extends JFrame {
 		contentPane.add(btnListarIncidentes);
 
 		JButton btnAtualizarCadastro = new JButton("Atualizar Cadastro");
+		btnAtualizarCadastro.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				EventQueue.invokeLater(new Runnable() {
+	                public void run() {
+	                    try {
+	                    	EditarCadastroPage frame = new EditarCadastroPage(echoSocket, login);
+	                        frame.setVisible(true);
+	                        frame.setLocationRelativeTo(null);
+	                        dispose(); 
+	                    } catch (Exception e) {
+	                        e.printStackTrace();
+	                    }
+	                }
+	            });
+			}
+		});
 		btnAtualizarCadastro.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnAtualizarCadastro.setBounds(49, 150, 150, 30);
 		contentPane.add(btnAtualizarCadastro);
@@ -69,8 +107,8 @@ public class HomePage extends JFrame {
 		lblHomePage.setBounds(60, 11, 130, 30);
 		contentPane.add(lblHomePage);
 	}
-	
-	private boolean realizarLogin(Socket echoSocket) throws JsonSyntaxException, IOException {
+
+	private boolean realizarLogout(Socket echoSocket, JsonObject login) throws JsonSyntaxException, IOException {
 		try {
 			saida = new PrintWriter(echoSocket.getOutputStream(), true);
 			entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
@@ -80,8 +118,8 @@ public class HomePage extends JFrame {
 		}
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("id_operacao", 9);
-		jsonObject.addProperty("token", "");
-		jsonObject.addProperty("id_usuario", "");
+		jsonObject.addProperty("token", login.get("token").getAsString());
+		jsonObject.addProperty("id_usuario", login.get("id_usuario").getAsString());
 		saida.println(jsonObject);
 		System.out.println("ENVIADO: " + jsonObject);
 
@@ -96,7 +134,8 @@ public class HomePage extends JFrame {
 			JOptionPane.showMessageDialog(null, "Logout realizado!");
 			return true;
 		} else {
-			JOptionPane.showMessageDialog(null, "Não foi possivel realizar o logout.", "Erro", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Não foi possivel realizar o logout.", "Erro",
+					JOptionPane.ERROR_MESSAGE);
 		}
 		return false;
 

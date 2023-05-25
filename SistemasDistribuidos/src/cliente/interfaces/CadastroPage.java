@@ -1,4 +1,4 @@
-package cliente.UI;
+package cliente.interfaces;
 
 import java.awt.EventQueue;
 import javax.swing.JFrame;
@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.awt.event.ActionEvent;
+import javax.swing.JPasswordField;
 
 public class CadastroPage extends JFrame {
 
@@ -28,13 +29,13 @@ public class CadastroPage extends JFrame {
 	private JPanel contentPane;
 	private JTextField txtNome;
 	private JTextField txtEmail;
-	private JTextField txtSenha;
 	private JButton btnLogar;
 
 	// Variáveis
 
 	private static PrintWriter saida = null;
 	private static BufferedReader entrada = null;
+	private JPasswordField passwordField;
 
 	public CadastroPage(Socket echoSocket) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -50,11 +51,6 @@ public class CadastroPage extends JFrame {
 		txtEmail.setBounds(60, 151, 260, 30);
 		contentPane.add(txtEmail);
 		txtEmail.setColumns(10);
-
-		txtSenha = new JTextField();
-		txtSenha.setBounds(60, 215, 260, 30);
-		contentPane.add(txtSenha);
-		txtSenha.setColumns(10);
 
 		JLabel lblNewLabel_1 = new JLabel("Email:");
 		lblNewLabel_1.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -123,6 +119,10 @@ public class CadastroPage extends JFrame {
 		btnNewButton.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnNewButton.setBounds(60, 267, 110, 25);
 		contentPane.add(btnNewButton);
+		
+		passwordField = new JPasswordField();
+		passwordField.setBounds(60, 215, 260, 30);
+		contentPane.add(passwordField);
 	}
 
 	private boolean realizarCadastro(Socket echoSocket) {
@@ -140,7 +140,7 @@ public class CadastroPage extends JFrame {
 		// Usando criptografia
 //      String senha = CaesarCrypt.encrypt(txtSenha.getText());
 //		jsonObject.addProperty("senha", senha);
-		jsonObject.addProperty("senha", txtSenha.getText());
+		jsonObject.addProperty("senha", new String(passwordField.getPassword()));
 		saida.println(jsonObject);
 		System.out.println("ENVIADO: " + jsonObject);
 		return receberResposta();
@@ -160,10 +160,10 @@ public class CadastroPage extends JFrame {
 
 			// Mensagem
 			if (respostaServidor.has("codigo") && respostaServidor.get("codigo").getAsInt() == 200) {
-				JOptionPane.showMessageDialog(null, "Login realizado!");
+				JOptionPane.showMessageDialog(null, "Cadastro realizado!");
 				return true;
 			} else {
-				JOptionPane.showMessageDialog(null, "Dados incorretos.", "Erro", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Não foi possivel cadastrar.", "Erro", JOptionPane.ERROR_MESSAGE);
 			}
 
 		} catch (IOException e) {
@@ -171,5 +171,4 @@ public class CadastroPage extends JFrame {
 		}
 		return false;
 	}
-
 }

@@ -1,4 +1,4 @@
-package cliente.UI;
+package cliente.interfaces;
 
 import java.awt.EventQueue;
 
@@ -96,8 +96,6 @@ public class ConexaoPage extends JFrame {
         System.out.println("Attemping to connect to host " + ipv4 + " on port " + porta + ".");
         try {
             echoSocket = new Socket(ipv4, porta);
-//            saida = new PrintWriter(echoSocket.getOutputStream(), true);
-//            entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
 
             EventQueue.invokeLater(new Runnable() {
                 public void run() {

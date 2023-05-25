@@ -77,32 +77,42 @@ public class EchoServidor extends Thread {
 					switch (operacao) {
 					// Resto do código do switch case
 					case 1:
+					case 2:
 						cliente.setNome(dados.get("nome").getAsString());
 						cliente.setEmail(dados.get("email").getAsString());
 						cliente.setSenha(dados.get("senha").getAsString());
 						cliente.setToken("");
+						if (operacao == 2)
+							cliente.setId(Integer.parseInt(dados.get("id_usuario").getAsString()));
 
 						// Mensagem retornada ao cliente
 						int codigo = validarDados(cliente, conexao) ? 200 : 500;
 
 						// Adiciona algumas propriedades
 						jsonObject.addProperty("codigo", codigo);
-						// Converte o JsonObject em uma string JSON
+						String mensagem;
 
 						if (codigo == 200) {
 							// Conecta com o banco de dados
 							conexao = BancoDados.conectar();
 							new ClienteDao(conexao).cadastrar(cliente);
-							System.out.println("Cliente cadastrado.");
-
+							mensagem = "Cadastro realizado com sucesso.";
+							if (operacao == 2) {
+								conexao = BancoDados.conectar();
+								cliente = new ClienteDao(conexao).fazerLogin(cliente.getEmail(), cliente.getSenha());
+								jsonObject.addProperty("token", cliente.getToken());
+								mensagem = "Dados alterados.";
+							}
+							System.out.println(mensagem);
 						} else {
-							System.out.println("Erro ao cadastrar cliente.");
-							jsonObject.addProperty("mensagem", "Erro ao realizar cadastro");
-
+							mensagem = (operacao == 1 ? "Erro ao realizar cadastrado."
+									: "Erro ao alterar os dados.");
+							jsonObject.addProperty("mensagem", mensagem);
+							System.out.println(mensagem);
 						}
+
 						retorno_cliente = new Gson().toJson(jsonObject);
 						out.println(retorno_cliente);
-
 						break;
 
 					case 3:
@@ -183,8 +193,8 @@ public class EchoServidor extends Thread {
 
 	public boolean validarDados(Cliente cliente, Connection conexao) throws SQLException, IOException {
 		conexao = BancoDados.conectar();
-		return validarNome(cliente.getNome()) && validarEmail(cliente.getEmail()) 
-			&& new ClienteDao(conexao).verificarEmail(cliente.getEmail()) && validarSenha(cliente.getSenha());
+		return validarNome(cliente.getNome()) && validarEmail(cliente.getEmail())
+				&& new ClienteDao(conexao).verificarEmail(cliente.getEmail()) && validarSenha(cliente.getSenha());
 	}
 
 	public static boolean validarNome(String nome) {

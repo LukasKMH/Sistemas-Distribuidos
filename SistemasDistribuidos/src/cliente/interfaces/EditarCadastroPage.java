@@ -1,4 +1,4 @@
-package cliente.UI;
+package cliente.interfaces;
 
 import java.awt.EventQueue;
 import javax.swing.JFrame;
@@ -36,7 +36,7 @@ public class EditarCadastroPage extends JFrame {
 	private static PrintWriter saida = null;
 	private static BufferedReader entrada = null;
 
-	public EditarCadastroPage(Socket echoSocket) {
+	public EditarCadastroPage(Socket echoSocket, JsonObject login) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		System.out.println("Conectado ao servidor - CADASTRO.\n");
 
@@ -68,11 +68,31 @@ public class EditarCadastroPage extends JFrame {
 
 		btnLogar = new JButton("Atualizar Dados");
 		btnLogar.setFont(new Font("Arial", Font.PLAIN, 14));
-		btnLogar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				editarCadastro(echoSocket);
-			}
+		btnLogar.addActionListener(e -> {
+		    JsonObject dados = editarCadastro(echoSocket, login);
+		    int codigo = dados.get("codigo").getAsInt();
+		    
+		    if (codigo == 200) {
+		        JOptionPane.showMessageDialog(null, "Dados atualizados!");
+		        
+		        int idUsuario = Integer.parseInt(login.get("id_usuario").getAsString());
+		        dados.addProperty("id_usuario", idUsuario);
+		        
+		        EventQueue.invokeLater(() -> {
+		            try {
+		                HomePage frame = new HomePage(echoSocket, dados);
+		                frame.setVisible(true);
+		                frame.setLocationRelativeTo(null);
+		                dispose();
+		            } catch (Exception ex) {
+		                ex.printStackTrace();
+		            }
+		        });
+		    } else {
+		        JOptionPane.showMessageDialog(null, "Erro ao atualizar cadastro.", "Erro", JOptionPane.ERROR_MESSAGE);
+		    }
 		});
+
 		btnLogar.setBounds(180, 267, 140, 25);
 		contentPane.add(btnLogar);
 
@@ -100,7 +120,7 @@ public class EditarCadastroPage extends JFrame {
 							LoginPage frame = new LoginPage(echoSocket);
 							frame.setVisible(true);
 							frame.setLocationRelativeTo(null);
-							dispose(); 
+							dispose();
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -113,7 +133,7 @@ public class EditarCadastroPage extends JFrame {
 		contentPane.add(btnNewButton);
 	}
 
-	private boolean editarCadastro(Socket echoSocket) {
+	private JsonObject editarCadastro(Socket echoSocket, JsonObject login) {
 		try {
 			saida = new PrintWriter(echoSocket.getOutputStream(), true);
 			entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
@@ -121,43 +141,34 @@ public class EditarCadastroPage extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("id_operacao", 2);
-		jsonObject.addProperty("nome", txtNome.getText());
-		jsonObject.addProperty("email", txtEmail.getText());
+		login.remove("codigo");
+		login.addProperty("id_operacao", 2);
+		login.addProperty("nome", txtNome.getText());
+		login.addProperty("email", txtEmail.getText());
 		// Usando criptografia
 //      String senha = CaesarCrypt.encrypt(txtSenha.getText());
 //		jsonObject.addProperty("senha", senha);
-		jsonObject.addProperty("senha", txtSenha.getText());
-		saida.println(jsonObject);
-		System.out.println("ENVIADO: " + jsonObject);
+		login.addProperty("senha", txtSenha.getText());
+		saida.println(login);
+		System.out.println("ENVIADO: " + login);
 		return receberResposta();
 
 	}
 
-	private boolean receberResposta() {
+	private JsonObject receberResposta() {
 		try {
 			Gson gson = new Gson();
 			JsonObject respostaServidor = gson.fromJson(entrada.readLine(), JsonObject.class);
 
-			if (respostaServidor != null) {
+			if (respostaServidor != null)
 				System.out.println("\nRESPOSTA: " + respostaServidor);
-				// Faça o tratamento adequado da resposta do servidor aqui
-			}
 			System.out.println("************************************************************************\n");
-
-			// Mensagem
-			if (respostaServidor.has("codigo") && respostaServidor.get("codigo").getAsInt() == 200) {
-				JOptionPane.showMessageDialog(null, "Login realizado!");
-				return true;
-			} else {
-				JOptionPane.showMessageDialog(null, "Dados incorretos.", "Erro", JOptionPane.ERROR_MESSAGE);
-			}
-
+			return respostaServidor;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return null;
+
 	}
 
 }

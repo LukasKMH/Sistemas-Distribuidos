@@ -1,4 +1,4 @@
-package cliente.UI;
+package cliente.interfaces;
 
 import java.awt.EventQueue;
 

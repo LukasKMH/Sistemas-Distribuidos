@@ -31,7 +31,7 @@ public class ClienteDao {
 				System.out.println("Email ja cadastrado.");
 				return false;
 			}
-			
+
 		} finally {
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
@@ -43,23 +43,59 @@ public class ClienteDao {
 	public void cadastrar(Cliente cliente) throws SQLException {
 
 		PreparedStatement st = null;
+		ResultSet rs = null;
 
 		try {
+			// Verificar se o ID do cliente já existe
+			String query = "SELECT COUNT(*) FROM clientes WHERE id = ?";
+			st = conn.prepareStatement(query);
+			st.setInt(1, cliente.getId());
+			rs = st.executeQuery();
+			rs.next();
+			int count = rs.getInt(1);
+			rs.close();
+			st.close();
 
-			st = conn.prepareStatement("insert into clientes (nome, email, senha, token) values(?,?,?,?)");
-
-			st.setString(1, cliente.getNome());
-			st.setString(2, cliente.getEmail());
-			st.setString(3, cliente.getSenha());
-			st.setString(4, cliente.getToken());
-
-			st.executeUpdate();
+			if (count > 0) {
+				// Atualizar os dados do cliente
+				st = conn.prepareStatement("UPDATE clientes SET nome = ?, email = ?, senha = ? WHERE id = ?");
+				st.setString(1, cliente.getNome());
+				st.setString(2, cliente.getEmail());
+				st.setString(3, cliente.getSenha());
+				st.setInt(4, cliente.getId());
+				st.executeUpdate();
+				System.out.println("Dados do cliente atualizados.");
+			} else {
+				// Inserir novo cliente
+				st = conn.prepareStatement("INSERT INTO clientes (nome, email, senha, token) VALUES (?, ?, ?, ?)");
+				st.setString(1, cliente.getNome());
+				st.setString(2, cliente.getEmail());
+				st.setString(3, cliente.getSenha());
+				st.setString(4, cliente.getToken());
+				st.executeUpdate();
+				System.out.println("Novo cliente cadastrado.");
+			}
 		} finally {
 			BancoDados.finalizarStatement(st);
 			BancoDados.desconectar();
 		}
 
 	}
+
+//	public void editarDados(String token, int id) throws SQLException {
+//		PreparedStatement st = null;
+//
+//		try {
+//			st = conn.prepareStatement("UPDATE clientes SET token = ? WHERE token = ? and id = ?");
+//			st.setString(1, "");
+//			st.setString(2, token);
+//			st.setInt(3, id);
+//			st.executeUpdate();
+//		} finally {
+//			BancoDados.finalizarStatement(st);
+//			BancoDados.desconectar();
+//		}
+//	}
 
 	public Cliente fazerLogin(String email, String senha) throws SQLException {
 		PreparedStatement st = null;

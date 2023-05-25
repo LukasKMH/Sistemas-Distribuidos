@@ -1,4 +1,4 @@
-package cliente.UI;
+package cliente.interfaces;
 
 import java.awt.EventQueue;
 import javax.swing.JFrame;
@@ -24,18 +24,19 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.awt.event.ActionEvent;
+import javax.swing.JPasswordField;
 
 public class LoginPage extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField txtEmail;
-	private JTextField txtSenha;
 	private JButton btnLogar;
 
 	// Variáveis
 	static PrintWriter saida = null;
 	static BufferedReader entrada = null;
+	private JPasswordField passwordField;
 
 	public LoginPage(Socket echoSocket) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -50,11 +51,6 @@ public class LoginPage extends JFrame {
 		txtEmail.setBounds(62, 91, 260, 30);
 		contentPane.add(txtEmail);
 		txtEmail.setColumns(10);
-
-		txtSenha = new JTextField();
-		txtSenha.setBounds(62, 155, 260, 30);
-		contentPane.add(txtSenha);
-		txtSenha.setColumns(10);
 
 		JLabel lblNewLabel_1 = new JLabel("Email:");
 		lblNewLabel_1.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -71,11 +67,14 @@ public class LoginPage extends JFrame {
 		btnLogar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					if (realizarLogin(echoSocket)) {
+					JsonObject login = realizarLogin(echoSocket);
+					// Mensagem
+					if (Integer.parseInt(login.get("codigo").getAsString()) == 200) {
+						JOptionPane.showMessageDialog(null, "Login realizado!");
 						EventQueue.invokeLater(new Runnable() {
 							public void run() {
 								try {
-									HomePage frame = new HomePage(echoSocket);
+									HomePage frame = new HomePage(echoSocket, login);
 									frame.setVisible(true);
 									frame.setLocationRelativeTo(null);
 									dispose();
@@ -84,6 +83,9 @@ public class LoginPage extends JFrame {
 								}
 							}
 						});
+					} else {
+						JOptionPane.showMessageDialog(null, "Email ou senha incorretos.", "Erro",
+								JOptionPane.ERROR_MESSAGE);
 					}
 
 				} catch (JsonSyntaxException | IOException e1) {
@@ -121,9 +123,13 @@ public class LoginPage extends JFrame {
 		btnFazerCadastro.setFont(new Font("Arial", Font.PLAIN, 12));
 		btnFazerCadastro.setBounds(204, 205, 120, 25);
 		contentPane.add(btnFazerCadastro);
+
+		passwordField = new JPasswordField();
+		passwordField.setBounds(62, 155, 260, 30);
+		contentPane.add(passwordField);
 	}
 
-	private boolean realizarLogin(Socket echoSocket) throws JsonSyntaxException, IOException {
+	private JsonObject realizarLogin(Socket echoSocket) throws JsonSyntaxException, IOException {
 		try {
 			saida = new PrintWriter(echoSocket.getOutputStream(), true);
 			entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
@@ -137,7 +143,8 @@ public class LoginPage extends JFrame {
 		// Usando criptografia
 //		String senha = CaesarCrypt.encrypt(txtSenha.getText());
 //		jsonObject.addProperty("senha", senha);
-		jsonObject.addProperty("senha", txtSenha.getText());
+
+		jsonObject.addProperty("senha", new String(passwordField.getPassword()));
 		saida.println(jsonObject);
 		System.out.println("ENVIADO: " + jsonObject);
 
@@ -147,14 +154,8 @@ public class LoginPage extends JFrame {
 			System.out.println("\nRESPOSTA: " + resposta_servidor);
 		System.out.println("************************************************************************\n");
 
-		// Mensagem
-		if (Integer.parseInt(resposta_servidor.get("codigo").getAsString()) == 200) {
-			JOptionPane.showMessageDialog(null, "Login realizado!");
-			return true;
-		} else {
-			JOptionPane.showMessageDialog(null, "Email ou senha incorretos.", "Erro", JOptionPane.ERROR_MESSAGE);
-		}
-		return false;
+		return resposta_servidor;
 
 	}
+
 }
