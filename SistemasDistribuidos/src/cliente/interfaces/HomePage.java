@@ -72,11 +72,44 @@ public class HomePage extends JFrame {
 		contentPane.add(btnLogout);
 
 		JButton btnReportarIncidentes = new JButton("Reportar incidente");
+		btnReportarIncidentes.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						try {
+							ReportarIncidenesPage frame = new ReportarIncidenesPage(echoSocket, login);
+							frame.setVisible(true);
+							frame.setLocationRelativeTo(null);
+							dispose();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
 		btnReportarIncidentes.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnReportarIncidentes.setBounds(49, 68, 150, 30);
 		contentPane.add(btnReportarIncidentes);
 
 		JButton btnListarIncidentes = new JButton("Listar incidentes");
+		btnListarIncidentes.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						try {
+							ListarIncidentesPage frame = new ListarIncidentesPage(echoSocket, login);
+							frame.setVisible(true);
+							frame.setLocationRelativeTo(null);
+							dispose();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
 		btnListarIncidentes.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnListarIncidentes.setBounds(49, 109, 150, 30);
 		contentPane.add(btnListarIncidentes);
@@ -85,17 +118,17 @@ public class HomePage extends JFrame {
 		btnAtualizarCadastro.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				EventQueue.invokeLater(new Runnable() {
-	                public void run() {
-	                    try {
-	                    	EditarCadastroPage frame = new EditarCadastroPage(echoSocket, login);
-	                        frame.setVisible(true);
-	                        frame.setLocationRelativeTo(null);
-	                        dispose(); 
-	                    } catch (Exception e) {
-	                        e.printStackTrace();
-	                    }
-	                }
-	            });
+					public void run() {
+						try {
+							EditarCadastroPage frame = new EditarCadastroPage(echoSocket, login);
+							frame.setVisible(true);
+							frame.setLocationRelativeTo(null);
+							dispose();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
 			}
 		});
 		btnAtualizarCadastro.setFont(new Font("Arial", Font.PLAIN, 14));

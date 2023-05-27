@@ -77,25 +77,11 @@ public class ClienteDao {
 			}
 		} finally {
 			BancoDados.finalizarStatement(st);
+			BancoDados.finalizarResultSet(rs);
 			BancoDados.desconectar();
 		}
 
 	}
-
-//	public void editarDados(String token, int id) throws SQLException {
-//		PreparedStatement st = null;
-//
-//		try {
-//			st = conn.prepareStatement("UPDATE clientes SET token = ? WHERE token = ? and id = ?");
-//			st.setString(1, "");
-//			st.setString(2, token);
-//			st.setInt(3, id);
-//			st.executeUpdate();
-//		} finally {
-//			BancoDados.finalizarStatement(st);
-//			BancoDados.desconectar();
-//		}
-//	}
 
 	public Cliente fazerLogin(String email, String senha) throws SQLException {
 		PreparedStatement st = null;

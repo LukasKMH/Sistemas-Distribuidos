@@ -3,15 +3,22 @@ package servidor;
 import java.net.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import servidor.dao.BancoDados;
 import servidor.dao.ClienteDao;
+import servidor.dao.IncidenteDao;
 import servidor.entidades.Cliente;
+import servidor.entidades.Incidente;
 
 import java.io.*;
 
@@ -64,6 +71,7 @@ public class EchoServidor extends Thread {
 			while ((entrada_cliente = in.readLine()) != null) {
 				String retorno_cliente = "";
 				Cliente cliente = new Cliente();
+				Incidente incidente = new Incidente();
 				JsonObject jsonObject = new JsonObject();
 				Connection conexao = null;
 
@@ -96,17 +104,16 @@ public class EchoServidor extends Thread {
 							// Conecta com o banco de dados
 							conexao = BancoDados.conectar();
 							new ClienteDao(conexao).cadastrar(cliente);
-							mensagem = "Cadastro realizado com sucesso.";
+
 							if (operacao == 2) {
 								conexao = BancoDados.conectar();
 								cliente = new ClienteDao(conexao).fazerLogin(cliente.getEmail(), cliente.getSenha());
 								jsonObject.addProperty("token", cliente.getToken());
-								mensagem = "Dados alterados.";
+
 							}
-							System.out.println(mensagem);
+
 						} else {
-							mensagem = (operacao == 1 ? "Erro ao realizar cadastrado."
-									: "Erro ao alterar os dados.");
+							mensagem = (operacao == 1 ? "Erro ao realizar cadastro." : "Erro ao alterar os dados.");
 							jsonObject.addProperty("mensagem", mensagem);
 							System.out.println(mensagem);
 						}
@@ -136,6 +143,49 @@ public class EchoServidor extends Thread {
 
 						break;
 
+					case 4:
+						incidente = new Incidente(dados);
+						System.out.println("Incidente: " + incidente);
+						// Conectar com o BD
+						conexao = BancoDados.conectar();
+						codigo = new IncidenteDao(conexao).reportarIncidente(incidente) ? 200 : 500;
+							
+						jsonObject.addProperty("codigo", codigo);
+						if (codigo == 500)
+							jsonObject.addProperty("codigo", "Falha ao cadastrar incidente.");
+						retorno_cliente = new Gson().toJson(jsonObject);
+						out.println(retorno_cliente);
+						break;
+
+					case 5: 
+						conexao = BancoDados.conectar();
+						
+						
+//						int periodo = Integer.parseInt(dados.get("periodo").getAsString());
+//						List<LocalTime> horarios = Dados.obterHorarios(periodo);
+//						System.out.println("Horarios: " + horarios);
+//						List<Integer> faixaKm = Dados.separarNumeros(dados.get("faixa_km").getAsString());
+//						System.out.println("Faixa KM: " + faixaKm);
+						
+						
+						try {
+							JsonArray listaIncidentes = new IncidenteDao(conexao).filtrarIncidentes(dados);
+							jsonObject.addProperty("codigo", 200);
+							jsonObject.add("lista_incidentes", listaIncidentes);
+						} catch (ParseException e) {
+						    e.printStackTrace();
+						    jsonObject.addProperty("codigo", 500);
+						}
+
+						jsonObject.addProperty("codigo", 200);
+		
+
+						retorno_cliente = new Gson().toJson(jsonObject);
+						out.println(retorno_cliente);
+						break;
+
+
+						
 					case 9:
 
 						if (logado && dados != null) {

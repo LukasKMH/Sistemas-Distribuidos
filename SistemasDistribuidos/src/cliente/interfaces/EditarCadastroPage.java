@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.awt.event.ActionEvent;
+import javax.swing.JPasswordField;
 
 public class EditarCadastroPage extends JFrame {
 
@@ -28,13 +29,13 @@ public class EditarCadastroPage extends JFrame {
 	private JPanel contentPane;
 	private JTextField txtNome;
 	private JTextField txtEmail;
-	private JTextField txtSenha;
 	private JButton btnLogar;
 
 	// Variáveis
 
 	private static PrintWriter saida = null;
 	private static BufferedReader entrada = null;
+	private JPasswordField passwordField;
 
 	public EditarCadastroPage(Socket echoSocket, JsonObject login) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -51,11 +52,6 @@ public class EditarCadastroPage extends JFrame {
 		contentPane.add(txtEmail);
 		txtEmail.setColumns(10);
 
-		txtSenha = new JTextField();
-		txtSenha.setBounds(60, 215, 260, 30);
-		contentPane.add(txtSenha);
-		txtSenha.setColumns(10);
-
 		JLabel lblNewLabel_1 = new JLabel("Email:");
 		lblNewLabel_1.setFont(new Font("Arial", Font.PLAIN, 12));
 		lblNewLabel_1.setBounds(60, 133, 49, 14);
@@ -69,28 +65,28 @@ public class EditarCadastroPage extends JFrame {
 		btnLogar = new JButton("Atualizar Dados");
 		btnLogar.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnLogar.addActionListener(e -> {
-		    JsonObject dados = editarCadastro(echoSocket, login);
-		    int codigo = dados.get("codigo").getAsInt();
-		    
-		    if (codigo == 200) {
-		        JOptionPane.showMessageDialog(null, "Dados atualizados!");
-		        
-		        int idUsuario = Integer.parseInt(login.get("id_usuario").getAsString());
-		        dados.addProperty("id_usuario", idUsuario);
-		        
-		        EventQueue.invokeLater(() -> {
-		            try {
-		                HomePage frame = new HomePage(echoSocket, dados);
-		                frame.setVisible(true);
-		                frame.setLocationRelativeTo(null);
-		                dispose();
-		            } catch (Exception ex) {
-		                ex.printStackTrace();
-		            }
-		        });
-		    } else {
-		        JOptionPane.showMessageDialog(null, "Erro ao atualizar cadastro.", "Erro", JOptionPane.ERROR_MESSAGE);
-		    }
+			JsonObject dados = editarCadastro(echoSocket, login);
+			int codigo = dados.get("codigo").getAsInt();
+
+			if (codigo == 200) {
+				JOptionPane.showMessageDialog(null, "Dados atualizados!");
+
+				int idUsuario = Integer.parseInt(login.get("id_usuario").getAsString());
+				dados.addProperty("id_usuario", idUsuario);
+
+				EventQueue.invokeLater(() -> {
+					try {
+						HomePage frame = new HomePage(echoSocket, dados);
+						frame.setVisible(true);
+						frame.setLocationRelativeTo(null);
+						dispose();
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				});
+			} else {
+				JOptionPane.showMessageDialog(null, "Erro ao atualizar cadastro.", "Erro", JOptionPane.ERROR_MESSAGE);
+			}
 		});
 
 		btnLogar.setBounds(180, 267, 140, 25);
@@ -131,6 +127,10 @@ public class EditarCadastroPage extends JFrame {
 		btnNewButton.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnNewButton.setBounds(60, 267, 80, 25);
 		contentPane.add(btnNewButton);
+		
+		passwordField = new JPasswordField();
+		passwordField.setBounds(60, 215, 260, 30);
+		contentPane.add(passwordField);
 	}
 
 	private JsonObject editarCadastro(Socket echoSocket, JsonObject login) {
@@ -146,9 +146,10 @@ public class EditarCadastroPage extends JFrame {
 		login.addProperty("nome", txtNome.getText());
 		login.addProperty("email", txtEmail.getText());
 		// Usando criptografia
-//      String senha = CaesarCrypt.encrypt(txtSenha.getText());
-//		jsonObject.addProperty("senha", senha);
-		login.addProperty("senha", txtSenha.getText());
+		// Usando criptografia
+		String senha = CaesarCrypt.encrypt(new String(passwordField.getPassword()));
+		login.addProperty("senha", senha);
+		// login.addProperty("senha", txtSenha.getText());
 		saida.println(login);
 		System.out.println("ENVIADO: " + login);
 		return receberResposta();
@@ -170,5 +171,4 @@ public class EditarCadastroPage extends JFrame {
 		return null;
 
 	}
-
 }

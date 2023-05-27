@@ -140,11 +140,17 @@ public class LoginPage extends JFrame {
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("id_operacao", 3);
 		jsonObject.addProperty("email", txtEmail.getText());
+		//Pre-definido
+		jsonObject.addProperty("email", "lukaskenji@gmail.com");
+		jsonObject.addProperty("senha", "t}si{9:;");
+		
+		//Pega e entrada sem criptografia
+		//jsonObject.addProperty("senha", new String(passwordField.getPassword()));
+
 		// Usando criptografia
-//		String senha = CaesarCrypt.encrypt(txtSenha.getText());
+//		String senha = CaesarCrypt.encrypt(new String(passwordField.getPassword()));
 //		jsonObject.addProperty("senha", senha);
 
-		jsonObject.addProperty("senha", new String(passwordField.getPassword()));
 		saida.println(jsonObject);
 		System.out.println("ENVIADO: " + jsonObject);
 

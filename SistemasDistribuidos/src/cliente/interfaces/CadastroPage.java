@@ -138,9 +138,8 @@ public class CadastroPage extends JFrame {
 		jsonObject.addProperty("nome", txtNome.getText());
 		jsonObject.addProperty("email", txtEmail.getText());
 		// Usando criptografia
-//      String senha = CaesarCrypt.encrypt(txtSenha.getText());
-//		jsonObject.addProperty("senha", senha);
-		jsonObject.addProperty("senha", new String(passwordField.getPassword()));
+		String senha = CaesarCrypt.encrypt(new String(passwordField.getPassword()));
+		jsonObject.addProperty("senha", senha);
 		saida.println(jsonObject);
 		System.out.println("ENVIADO: " + jsonObject);
 		return receberResposta();
