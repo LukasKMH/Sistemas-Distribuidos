@@ -144,50 +144,66 @@ public class EchoServidor extends Thread {
 						break;
 
 					case 4:
+					case 10:
 						incidente = new Incidente(dados);
-						System.out.println("Incidente: " + incidente);
+						if (operacao == 10)
+							incidente.setId(Integer.parseInt(dados.get("id_incidente").getAsString()));
 						// Conectar com o BD
 						conexao = BancoDados.conectar();
 						codigo = new IncidenteDao(conexao).reportarIncidente(incidente) ? 200 : 500;
-							
+
 						jsonObject.addProperty("codigo", codigo);
-						if (codigo == 500)
-							jsonObject.addProperty("codigo", "Falha ao cadastrar incidente.");
+						if (codigo == 500) {
+							jsonObject.addProperty("mensagem", "Erro no incidente.");
+						}
 						retorno_cliente = new Gson().toJson(jsonObject);
 						out.println(retorno_cliente);
 						break;
 
-					case 5: 
+					case 5:
 						conexao = BancoDados.conectar();
-						
-						
-//						int periodo = Integer.parseInt(dados.get("periodo").getAsString());
-//						List<LocalTime> horarios = Dados.obterHorarios(periodo);
-//						System.out.println("Horarios: " + horarios);
-//						List<Integer> faixaKm = Dados.separarNumeros(dados.get("faixa_km").getAsString());
-//						System.out.println("Faixa KM: " + faixaKm);
-						
-						
+
 						try {
 							JsonArray listaIncidentes = new IncidenteDao(conexao).filtrarIncidentes(dados);
 							jsonObject.addProperty("codigo", 200);
 							jsonObject.add("lista_incidentes", listaIncidentes);
 						} catch (ParseException e) {
-						    e.printStackTrace();
-						    jsonObject.addProperty("codigo", 500);
+							e.printStackTrace();
+							jsonObject.addProperty("codigo", 500);
 						}
 
 						jsonObject.addProperty("codigo", 200);
-		
 
 						retorno_cliente = new Gson().toJson(jsonObject);
 						out.println(retorno_cliente);
 						break;
 
+					case 6:
+						conexao = BancoDados.conectar();
 
+						try {
+							JsonArray listaIncidentes = new IncidenteDao(conexao).listarMeusIncidentes(dados);
+							jsonObject.addProperty("codigo", 200);
+							jsonObject.add("lista_incidentes", listaIncidentes);
+						} catch (ParseException e) {
+							e.printStackTrace();
+							jsonObject.addProperty("codigo", 500);
+						}
+
+						jsonObject.addProperty("codigo", 200);
+
+						retorno_cliente = new Gson().toJson(jsonObject);
+						out.println(retorno_cliente);
+						break;
+
+					case 7:
+						conexao = BancoDados.conectar();
+						jsonObject = new IncidenteDao(conexao).excluirIncidente(dados);
+						retorno_cliente = new Gson().toJson(jsonObject);
+						out.println(retorno_cliente);
+						break;
 						
 					case 9:
-
 						if (logado && dados != null) {
 							String token = dados.get("token").getAsString();
 							int id = dados.get("id_usuario").getAsInt();
@@ -218,6 +234,7 @@ public class EchoServidor extends Thread {
 						out.println(retorno_cliente);
 						;
 						break;
+
 					}
 				} else {
 					System.out.println("Operacao nula.");

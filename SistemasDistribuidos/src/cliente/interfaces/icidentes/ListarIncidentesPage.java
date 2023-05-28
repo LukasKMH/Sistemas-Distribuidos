@@ -1,4 +1,4 @@
-package cliente.interfaces;
+package cliente.interfaces.icidentes;
 
 import java.awt.EventQueue;
 
@@ -21,9 +21,10 @@ import javax.swing.JFormattedTextField;
 import javax.swing.text.MaskFormatter;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import cliente.CaesarCrypt;
+import cliente.interfaces.HomePage;
 
 import javax.swing.JComboBox;
 import java.awt.Font;
@@ -101,7 +102,25 @@ public class ListarIncidentesPage extends JFrame {
 		btnReportar.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnReportar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				reportarIncidente(echoSocket);
+				JsonObject respostaServidor = reportarIncidente(echoSocket);
+				if (respostaServidor != null) {
+					EventQueue.invokeLater(new Runnable() {
+						public void run() {
+							try {
+								JsonArray lista_incidentes = respostaServidor.getAsJsonArray("lista_incidentes");
+								HomePage frame2 = new HomePage(echoSocket, login);
+								frame2.setVisible(true);
+								frame2.setLocationRelativeTo(null);
+								TabelaIncidentes frame = new TabelaIncidentes(lista_incidentes);
+								frame.setVisible(true);
+								dispose();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					});
+				}
+
 			}
 		});
 		btnReportar.setBounds(131, 213, 90, 25);
@@ -119,7 +138,7 @@ public class ListarIncidentesPage extends JFrame {
 
 		JButton btnVoltar = new JButton("Voltar");
 		btnVoltar.addActionListener(new ActionListener() {
-		 	public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						try {
@@ -144,11 +163,11 @@ public class ListarIncidentesPage extends JFrame {
 		contentPane.add(lblNewLabel_1);
 	}
 
-	private void reportarIncidente(Socket echoSocket) {
-		String data = txtData.getText();
-		String faixaKmInicial = txtFaixaKmInicial.getText();
-		String faixaKmFinal = txtFaixaKmFinal.getText();
-		String periodo = comboBoxPeriodo.getSelectedItem().toString();
+	private JsonObject reportarIncidente(Socket echoSocket) {
+//		String data = txtData.getText();
+//		String faixaKmInicial = txtFaixaKmInicial.getText();
+//		String faixaKmFinal = txtFaixaKmFinal.getText();
+//		String periodo = comboBoxPeriodo.getSelectedItem().toString();
 
 		try {
 			saida = new PrintWriter(echoSocket.getOutputStream(), true);
@@ -164,18 +183,18 @@ public class ListarIncidentesPage extends JFrame {
 //		jsonObject.addProperty("data", txtData.getText());
 //		jsonObject.addProperty("faixa_km", txtFaixaKmInicial.getText() + "-" + txtFaixaKmFinal.getText());
 //		jsonObject.addProperty("periodo", comboBoxPeriodo.getSelectedIndex() + 1);
-		
-		// Dados pre dfiniods
+
+		// Dados pre definiods
 		jsonObject.addProperty("rodovia", "BR-111");
 		jsonObject.addProperty("data", "2023-05-25");
-		jsonObject.addProperty("faixa_km", "300-340");
+		//jsonObject.addProperty("faixa_km", "300-340");
 		jsonObject.addProperty("periodo", "3");
 		saida.println(jsonObject);
 		System.out.println("ENVIADO: " + jsonObject);
-		receberResposta(echoSocket);
+		return receberResposta(echoSocket);
 	}
 
-	private boolean receberResposta(Socket echoSocket) {
+	private JsonObject receberResposta(Socket echoSocket) {
 		try {
 			Gson gson = new Gson();
 			JsonObject respostaServidor = gson.fromJson(entrada.readLine(), JsonObject.class);
@@ -188,15 +207,16 @@ public class ListarIncidentesPage extends JFrame {
 
 			// Mensagem
 			if (respostaServidor.has("codigo") && respostaServidor.get("codigo").getAsInt() == 200) {
-				//JOptionPane.showMessageDialog(null, "Cadastro realizado!");
-				return true;
+				// JOptionPane.showMessageDialog(null, "Incidentes listados!");
+				return respostaServidor;
 			} else {
-				JOptionPane.showMessageDialog(null, "Não foi possivel cadastrar.", "Erro", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Erro ao listar incidentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+				return null;
 			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return null;
 	}
 }

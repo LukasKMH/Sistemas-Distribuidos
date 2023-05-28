@@ -113,7 +113,7 @@ public class EditarCadastroPage extends JFrame {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						try {
-							LoginPage frame = new LoginPage(echoSocket);
+							HomePage frame = new HomePage(echoSocket, login);
 							frame.setVisible(true);
 							frame.setLocationRelativeTo(null);
 							dispose();

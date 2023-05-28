@@ -1,4 +1,4 @@
-package cliente.interfaces;
+package cliente.interfaces.icidentes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -7,6 +7,8 @@ import javax.swing.text.MaskFormatter;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+
+import cliente.interfaces.HomePage;
 
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -42,7 +44,7 @@ public class ReportarIncidenesPage extends JFrame {
 //            e2.printStackTrace();
 //        }
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 359, 300);
+        setBounds(100, 100, 335, 300);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
@@ -55,28 +57,28 @@ public class ReportarIncidenesPage extends JFrame {
         contentPane.add(lblReportarIncidente);
 
         txtRodovia = new JTextField();
-        txtRodovia.setBounds(199, 86, 100, 25);
+        txtRodovia.setBounds(33, 72, 257, 25);
         contentPane.add(txtRodovia);
         txtRodovia.setColumns(10);
 
         JLabel lblNewLabel_1 = new JLabel("Km:");
         lblNewLabel_1.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblNewLabel_1.setBounds(33, 119, 49, 16);
+        lblNewLabel_1.setBounds(33, 107, 49, 16);
         contentPane.add(lblNewLabel_1);
 
         JLabel lblRodovia = new JLabel("Rodovia:");
         lblRodovia.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblRodovia.setBounds(199, 64, 60, 16);
+        lblRodovia.setBounds(33, 52, 60, 16);
         contentPane.add(lblRodovia);
 
         txtKm = new JTextField();
         txtKm.setColumns(10);
-        txtKm.setBounds(33, 141, 100, 25);
+        txtKm.setBounds(33, 127, 259, 25);
         contentPane.add(txtKm);
 
         JLabel lblNewLabel_1_2 = new JLabel("Tipo do incidene:");
         lblNewLabel_1_2.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblNewLabel_1_2.setBounds(199, 119, 120, 16);
+        lblNewLabel_1_2.setBounds(33, 162, 120, 16);
         contentPane.add(lblNewLabel_1_2);
 
         JButton btnReportar = new JButton("Reportar");
@@ -101,13 +103,13 @@ public class ReportarIncidenesPage extends JFrame {
                 }
             }
         });
-        btnReportar.setFont(new Font("Arial", Font.PLAIN, 14));
-        btnReportar.setBounds(199, 206, 100, 25);
+        btnReportar.setFont(new Font("Arial", Font.BOLD, 16));
+        btnReportar.setBounds(192, 225, 100, 25);
         contentPane.add(btnReportar);
 
         txtTipo = new JTextField();
         txtTipo.setColumns(10);
-        txtTipo.setBounds(199, 141, 100, 25);
+        txtTipo.setBounds(33, 182, 259, 25);
         contentPane.add(txtTipo);
         
         JButton btnVoltar = new JButton("Voltar");
@@ -128,7 +130,7 @@ public class ReportarIncidenesPage extends JFrame {
 			}
         });
         btnVoltar.setFont(new Font("Arial", Font.PLAIN, 14));
-        btnVoltar.setBounds(33, 206, 100, 25);
+        btnVoltar.setBounds(33, 225, 100, 25);
         contentPane.add(btnVoltar);
     }
 

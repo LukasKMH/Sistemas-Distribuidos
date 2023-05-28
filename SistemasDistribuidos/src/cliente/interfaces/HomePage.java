@@ -5,8 +5,13 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+
+import cliente.interfaces.icidentes.ListarIncidentesPage;
+import cliente.interfaces.icidentes.ReportarIncidenesPage;
+import cliente.interfaces.icidentes.TabelaMeusIncidentes;
 
 import javax.swing.JButton;
 
@@ -35,7 +40,7 @@ public class HomePage extends JFrame {
 
 	public HomePage(Socket echoSocket, JsonObject login) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 269, 300);
+		setBounds(100, 100, 261, 326);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
@@ -46,7 +51,8 @@ public class HomePage extends JFrame {
 		btnLogout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					if (realizarLogout(echoSocket, login)) {
+					JsonObject resposta_servidor = realizarLogout(echoSocket, login, 9);
+					if (resposta_servidor != null) {
 						EventQueue.invokeLater(new Runnable() {
 							public void run() {
 								try {
@@ -68,7 +74,7 @@ public class HomePage extends JFrame {
 			}
 		});
 		btnLogout.setFont(new Font("Arial", Font.PLAIN, 14));
-		btnLogout.setBounds(49, 191, 150, 30);
+		btnLogout.setBounds(49, 232, 150, 30);
 		contentPane.add(btnLogout);
 
 		JButton btnReportarIncidentes = new JButton("Reportar incidente");
@@ -139,9 +145,39 @@ public class HomePage extends JFrame {
 		lblHomePage.setFont(new Font("Tahoma", Font.PLAIN, 24));
 		lblHomePage.setBounds(60, 11, 130, 30);
 		contentPane.add(lblHomePage);
+
+		JButton btnMeusIncidentes = new JButton("Meus Incidentes");
+		btnMeusIncidentes.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					JsonObject resposta_servidor = realizarLogout(echoSocket, login, 6);
+					if (resposta_servidor != null) {
+						EventQueue.invokeLater(new Runnable() {
+							public void run() {
+								try {
+									JsonArray lista_incidentes = resposta_servidor.getAsJsonArray("lista_incidentes");
+									TabelaMeusIncidentes frame = new TabelaMeusIncidentes(echoSocket, lista_incidentes, login);
+									frame.setVisible(true);
+									//dispose();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							}
+						});
+					}
+				} catch (JsonSyntaxException | IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		btnMeusIncidentes.setFont(new Font("Arial", Font.PLAIN, 14));
+		btnMeusIncidentes.setBounds(49, 191, 150, 30);
+		contentPane.add(btnMeusIncidentes);
 	}
 
-	private boolean realizarLogout(Socket echoSocket, JsonObject login) throws JsonSyntaxException, IOException {
+	private JsonObject realizarLogout(Socket echoSocket, JsonObject login, int operacao)
+			throws JsonSyntaxException, IOException {
 		try {
 			saida = new PrintWriter(echoSocket.getOutputStream(), true);
 			entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
@@ -150,7 +186,7 @@ public class HomePage extends JFrame {
 			e.printStackTrace();
 		}
 		JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("id_operacao", 9);
+		jsonObject.addProperty("id_operacao", operacao);
 		jsonObject.addProperty("token", login.get("token").getAsString());
 		jsonObject.addProperty("id_usuario", login.get("id_usuario").getAsString());
 		saida.println(jsonObject);
@@ -164,13 +200,14 @@ public class HomePage extends JFrame {
 
 		// Mensagem
 		if (Integer.parseInt(resposta_servidor.get("codigo").getAsString()) == 200) {
-			JOptionPane.showMessageDialog(null, "Logout realizado!");
-			return true;
-		} else {
+			if (operacao == 9)
+				JOptionPane.showMessageDialog(null, "Logout realizado!");
+			return resposta_servidor;
+		} else if (operacao == 9) {
 			JOptionPane.showMessageDialog(null, "Não foi possivel realizar o logout.", "Erro",
 					JOptionPane.ERROR_MESSAGE);
 		}
-		return false;
+		return null;
 
 	}
 }
