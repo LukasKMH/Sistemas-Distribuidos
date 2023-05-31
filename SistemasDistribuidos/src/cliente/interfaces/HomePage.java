@@ -188,6 +188,7 @@ public class HomePage extends JFrame {
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("id_operacao", operacao);
 		jsonObject.addProperty("token", login.get("token").getAsString());
+		//jsonObject.addProperty("id_usuario", "ad8794dsa");
 		jsonObject.addProperty("id_usuario", login.get("id_usuario").getAsString());
 		saida.println(jsonObject);
 		System.out.println("ENVIADO: " + jsonObject);
@@ -204,7 +205,7 @@ public class HomePage extends JFrame {
 				JOptionPane.showMessageDialog(null, "Logout realizado!");
 			return resposta_servidor;
 		} else if (operacao == 9) {
-			JOptionPane.showMessageDialog(null, "Não foi possivel realizar o logout.", "Erro",
+			JOptionPane.showMessageDialog(null, resposta_servidor.get("mensagem").getAsString(), "Erro",
 					JOptionPane.ERROR_MESSAGE);
 		}
 		return null;

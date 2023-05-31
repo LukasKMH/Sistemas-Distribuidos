@@ -75,12 +75,12 @@ public class TabelaIncidentes extends JFrame {
 		for (int i = 0; i < lista_incidentes.size(); i++) {
 			JsonObject incidente = lista_incidentes.get(i).getAsJsonObject();
 
-			String id = incidente.get("id").getAsString();
+			String id = incidente.get("id_incidente").getAsString();
 			String rodovia = incidente.get("rodovia").getAsString();
 
 			// Formatar a data para o formato certo
 			LocalDateTime dataResult = LocalDateTime.parse(incidente.get("data").getAsString(),
-					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"));
+					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 			String data = dataResult.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 			String km = incidente.get("km").getAsString();
 			String horario = dataResult.format(DateTimeFormatter.ofPattern("HH:mm:ss"));

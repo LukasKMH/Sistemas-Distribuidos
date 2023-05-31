@@ -26,6 +26,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import servidor.entidades.TipoIncidente;
+
 public class TabelaMeusIncidentes extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -46,6 +48,7 @@ public class TabelaMeusIncidentes extends JFrame {
 		tableModel.addColumn("Data");
 		tableModel.addColumn("Km");
 		tableModel.addColumn("Horário");
+		tableModel.addColumn("Tipo");
 
 		// Cria a tabela e adiciona o modelo
 		table = new JTable(tableModel);
@@ -59,7 +62,7 @@ public class TabelaMeusIncidentes extends JFrame {
 
 		// Adiciona a tabela em um JScrollPane
 		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setBounds(0, 0, 386, 156);
+		scrollPane.setBounds(0, 0, 460, 156);
 		getContentPane().add(scrollPane);
 
 		// Define a largura preferencial das colunas
@@ -68,17 +71,19 @@ public class TabelaMeusIncidentes extends JFrame {
 		TableColumn dataColumn = table.getColumnModel().getColumn(2);
 		TableColumn kmColumn = table.getColumnModel().getColumn(3);
 		TableColumn horarioColumn = table.getColumnModel().getColumn(4);
+		TableColumn tipoColumn = table.getColumnModel().getColumn(5);
 
 		idColumn.setPreferredWidth(50); // Define a largura preferencial da coluna ID
-		rodoviaColumn.setPreferredWidth(100); // Define a largura preferencial da coluna Rodovia
+		rodoviaColumn.setPreferredWidth(80); // Define a largura preferencial da coluna Rodovia
 		dataColumn.setPreferredWidth(120); // Define a largura preferencial da coluna Data
-		kmColumn.setPreferredWidth(80); // Define a largura preferencial da coluna Km
+		kmColumn.setPreferredWidth(60); // Define a largura preferencial da coluna Km
 		horarioColumn.setPreferredWidth(100); // Define a largura preferencial da coluna Horário
+		tipoColumn.setPreferredWidth(50); // Define a largura preferencial da coluna Tipo
 
 		// Cria o botão de edição
 		editarButton = new JButton("Editar");
 		editarButton.setFont(new Font("Arial", Font.PLAIN, 14));
-		editarButton.setBounds(239, 167, 100, 30);
+		editarButton.setBounds(280, 167, 100, 30);
 		editarButton.setPreferredSize(new Dimension(80, 30)); // Define o tamanho do botão "Editar"
 		editarButton.setEnabled(false); // Desabilita o botão inicialmente
 		editarButton.addActionListener(new ActionListener() {
@@ -111,7 +116,7 @@ public class TabelaMeusIncidentes extends JFrame {
 		// Cria o botão de exclusão
 		excluirButton = new JButton("Excluir");
 		excluirButton.setFont(new Font("Arial", Font.PLAIN, 14));
-		excluirButton.setBounds(53, 167, 100, 30);
+		excluirButton.setBounds(70, 167, 100, 30);
 		excluirButton.setPreferredSize(new Dimension(80, 30)); // Define o tamanho do botão "Excluir"
 		excluirButton.setEnabled(false);
 		excluirButton.addActionListener(new ActionListener() {
@@ -140,7 +145,7 @@ public class TabelaMeusIncidentes extends JFrame {
 		});
 		getContentPane().add(excluirButton); // Adiciona o botão à direita
 
-		setSize(400, 251);
+		setSize(473, 251);
 		setVisible(true);
 
 		mostrarIncidentes(lista_incidentes);
@@ -173,12 +178,14 @@ public class TabelaMeusIncidentes extends JFrame {
 
 			// Formatar a data para o formato certo
 			LocalDateTime dataResult = LocalDateTime.parse(incidente.get("data").getAsString(),
-					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"));
+					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 			String data = dataResult.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 			String km = incidente.get("km").getAsString();
 			String horario = dataResult.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+			String tipo = incidente.get("tipo_incidente").getAsString();
+			//String tipo = TipoIncidente.getMensagemFromCode(incidente.get("tipo_incidente").getAsInt());
 
-			Object[] rowData = { id, rodovia, data, km, horario };
+			Object[] rowData = { id, rodovia, data, km, horario, tipo};
 			tableModel.addRow(rowData);
 		}
 	}
@@ -230,7 +237,7 @@ public class TabelaMeusIncidentes extends JFrame {
 	                }
 
 	            } else {
-	                JOptionPane.showMessageDialog(null, "Erro ao excluir incidente.", "Erro",
+	                JOptionPane.showMessageDialog(null, resposta_servidor.get("codigo").getAsString(), "Erro",
 	                        JOptionPane.ERROR_MESSAGE);
 	            }
 	        } catch (IOException e) {

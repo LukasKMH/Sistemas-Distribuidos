@@ -178,17 +178,19 @@ public class ListarIncidentesPage extends JFrame {
 		}
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("id_operacao", 5);
-		// Inserir dados
-//		jsonObject.addProperty("rodovia", txtRodovia.getText());
-//		jsonObject.addProperty("data", txtData.getText());
-//		jsonObject.addProperty("faixa_km", txtFaixaKmInicial.getText() + "-" + txtFaixaKmFinal.getText());
-//		jsonObject.addProperty("periodo", comboBoxPeriodo.getSelectedIndex() + 1);
 
 		// Dados pre definiods
 		jsonObject.addProperty("rodovia", "BR-111");
-		jsonObject.addProperty("data", "2023-05-25");
-		//jsonObject.addProperty("faixa_km", "300-340");
+		jsonObject.addProperty("data", "2023-05-31 00:00:00");
+		jsonObject.addProperty("faixa_km", "");
 		jsonObject.addProperty("periodo", "3");
+		
+		// Inserir dados
+		jsonObject.addProperty("rodovia", txtRodovia.getText());
+		jsonObject.addProperty("data", txtData.getText() + " 00:00:00");
+		//jsonObject.addProperty("faixa_km", txtFaixaKmInicial.getText() + "-" + txtFaixaKmFinal.getText());
+		jsonObject.addProperty("periodo", comboBoxPeriodo.getSelectedIndex() + 1);
+		
 		saida.println(jsonObject);
 		System.out.println("ENVIADO: " + jsonObject);
 		return receberResposta(echoSocket);
@@ -201,7 +203,6 @@ public class ListarIncidentesPage extends JFrame {
 
 			if (respostaServidor != null) {
 				System.out.println("\nRESPOSTA: " + respostaServidor);
-				// Faça o tratamento adequado da resposta do servidor aqui
 			}
 			System.out.println("************************************************************************\n");
 
@@ -210,7 +211,7 @@ public class ListarIncidentesPage extends JFrame {
 				// JOptionPane.showMessageDialog(null, "Incidentes listados!");
 				return respostaServidor;
 			} else {
-				JOptionPane.showMessageDialog(null, "Erro ao listar incidentes.", "Erro", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, respostaServidor.get("mensagem").getAsString(), "Erro", JOptionPane.ERROR_MESSAGE);
 				return null;
 			}
 

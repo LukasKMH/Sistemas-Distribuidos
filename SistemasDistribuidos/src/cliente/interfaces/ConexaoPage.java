@@ -69,8 +69,8 @@ public class ConexaoPage extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 //				String ipv4 = txtIP.getText().toString();
 //				int porta = Integer.parseInt(txtPorta.getText().toString());	
-				// connectToServer(ipv4, porta);
-				connectToServer("127.0.0.1", 24001);
+//				connectToServer(ipv4, porta);
+				connectToServer("10.20.8.77", 24001);
 			}
 		});
 

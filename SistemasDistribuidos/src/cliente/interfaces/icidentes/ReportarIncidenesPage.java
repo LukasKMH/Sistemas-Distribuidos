@@ -165,7 +165,7 @@ public class ReportarIncidenesPage extends JFrame {
             JOptionPane.showMessageDialog(null, "Incidente Reportado!");
 
         } else {
-            JOptionPane.showMessageDialog(null, "Erro ao reportar incidente.", "Erro",
+            JOptionPane.showMessageDialog(null, resposta_servidor.get("mensagem").getAsString(), "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

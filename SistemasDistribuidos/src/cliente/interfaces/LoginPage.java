@@ -70,7 +70,6 @@ public class LoginPage extends JFrame {
 					JsonObject login = realizarLogin(echoSocket);
 					// Mensagem
 					if (Integer.parseInt(login.get("codigo").getAsString()) == 200) {
-						JOptionPane.showMessageDialog(null, "Login realizado!");
 						EventQueue.invokeLater(new Runnable() {
 							public void run() {
 								try {
@@ -84,7 +83,7 @@ public class LoginPage extends JFrame {
 							}
 						});
 					} else {
-						JOptionPane.showMessageDialog(null, "Email ou senha incorretos.", "Erro",
+						JOptionPane.showMessageDialog(null, login.get("codigo").getAsString(), "Erro",
 								JOptionPane.ERROR_MESSAGE);
 					}
 
@@ -147,7 +146,7 @@ public class LoginPage extends JFrame {
 		//Pega e entrada sem criptografia
 		//jsonObject.addProperty("senha", new String(passwordField.getPassword()));
 
-		// Usando criptografia
+		//Usando criptografia
 //		String senha = CaesarCrypt.encrypt(new String(passwordField.getPassword()));
 //		jsonObject.addProperty("senha", senha);
 

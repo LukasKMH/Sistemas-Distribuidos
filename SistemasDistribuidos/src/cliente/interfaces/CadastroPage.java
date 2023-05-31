@@ -162,7 +162,7 @@ public class CadastroPage extends JFrame {
 				JOptionPane.showMessageDialog(null, "Cadastro realizado!");
 				return true;
 			} else {
-				JOptionPane.showMessageDialog(null, "Não foi possivel cadastrar.", "Erro", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, respostaServidor.get("mensagem").getAsString(), "Erro", JOptionPane.ERROR_MESSAGE);
 			}
 
 		} catch (IOException e) {

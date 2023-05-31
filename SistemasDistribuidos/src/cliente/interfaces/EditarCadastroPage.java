@@ -85,7 +85,7 @@ public class EditarCadastroPage extends JFrame {
 					}
 				});
 			} else {
-				JOptionPane.showMessageDialog(null, "Erro ao atualizar cadastro.", "Erro", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, dados.get("mensagem").getAsString(), "Erro", JOptionPane.ERROR_MESSAGE);
 			}
 		});
 

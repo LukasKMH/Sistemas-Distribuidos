@@ -166,7 +166,7 @@ public class EditarIncidente extends JFrame {
             JOptionPane.showMessageDialog(null, "Incidente atualizado!");
 
         } else {
-            JOptionPane.showMessageDialog(null, "Erro ao atualizar incidente.", "Erro",
+            JOptionPane.showMessageDialog(null, resposta_servidor.get("mensagem").getAsString(), "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
