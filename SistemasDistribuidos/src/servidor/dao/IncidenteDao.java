@@ -16,9 +16,8 @@ import java.util.List;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import servidor.Dados;
 import servidor.entidades.Incidente;
-import servidor.entidades.TipoIncidente;
+import servidor.uteis.Dados;
 
 public class IncidenteDao {
 	private Connection conn;
@@ -250,7 +249,7 @@ public class IncidenteDao {
 
 			if (rowsAffected > 0) {
 				retorno_servidor.addProperty("codigo", 200);
-				System.out.println("Incidente excluIdo com sucesso!");
+				System.out.println("Incidente excluido com sucesso!");
 			} else {
 				retorno_servidor.addProperty("codigo", 500);
 				mensagem = "Nao foi possível excluir o incidente. Verifique se o ID do incidente e o ID do usuário estão corretos.";

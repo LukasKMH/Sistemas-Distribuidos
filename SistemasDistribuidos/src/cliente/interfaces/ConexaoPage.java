@@ -69,8 +69,8 @@ public class ConexaoPage extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 //				String ipv4 = txtIP.getText().toString();
 //				int porta = Integer.parseInt(txtPorta.getText().toString());	
-//				connectToServer(ipv4, porta);
-				connectToServer("10.20.8.77", 24001);
+//				conectarServidor(ipv4, porta);
+				conectarServidor("127.0.0.1", 24001);
 			}
 		});
 
@@ -93,11 +93,10 @@ public class ConexaoPage extends JFrame {
 		contentPane.add(lblNewLabel_2);
 	}
 
-	private void connectToServer(String ipv4, int porta) {
-		System.out.println("Attemping to connect to host " + ipv4 + " on port " + porta + ".");
+	public void conectarServidor(String ipv4, int porta) {
+		System.out.println("Tentando conectar ao host " + ipv4 + " na porta " + porta + ".\n");
 		try {
 			echoSocket = new Socket(ipv4, porta);
-
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
 					try {
@@ -111,11 +110,25 @@ public class ConexaoPage extends JFrame {
 				}
 			});
 		} catch (UnknownHostException e) {
-			System.err.println("Don't know about host: " + ipv4);
+			System.err.println("Não foi possível determinar o host: " + ipv4);
 			System.exit(1);
 		} catch (IOException e) {
-			System.err.println("Couldn't get I/O for " + "the connection to: " + ipv4);
+			System.err.println("Nao foi possível obter entrada/saída para a conexão com: " + ipv4);
 			System.exit(1);
 		}
+	}
+	
+	public Socket conectarServidor2(String ipv4, int porta) {
+		System.out.println("Tentando conectar ao host " + ipv4 + " na porta " + porta + ".\n");
+		try {
+			echoSocket = new Socket(ipv4, porta);
+		} catch (UnknownHostException e) {
+			System.err.println("Nao foi possível determinar o host: " + ipv4);
+			System.exit(1);
+		} catch (IOException e) {
+			System.err.println("Nao foi possível obter entrada/saída para a conexão com: " + ipv4);
+			System.exit(1);
+		}
+		return echoSocket;
 	}
 }

@@ -24,9 +24,10 @@ import javax.swing.table.TableColumn;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
-import servidor.entidades.TipoIncidente;
+import servidor.uteis.ValidarJson;
 
 public class TabelaMeusIncidentes extends JFrame {
 
@@ -111,7 +112,7 @@ public class TabelaMeusIncidentes extends JFrame {
 				}
 			}
 		});
-		getContentPane().add(editarButton); // Adiciona o botão à esquerda
+		getContentPane().add(editarButton); 
 
 		// Cria o botão de exclusão
 		excluirButton = new JButton("Excluir");
@@ -129,10 +130,12 @@ public class TabelaMeusIncidentes extends JFrame {
 					EventQueue.invokeLater(new Runnable() {
 						public void run() {
 							try {
-								login.addProperty("id_operacao", 7);
-								login.addProperty("id_incidente", idIncidente);
-								login.remove("codigo");
-								excluirIncidente(echoSocket, login);
+								JsonObject dados = new JsonObject();
+								dados.addProperty("id_operacao", 7);
+								dados.addProperty("token", login.get("token").getAsString());
+								dados.addProperty("id_incidente", idIncidente);
+								dados.addProperty("id_usuario", login.get("id_usuario").getAsString());
+								excluirIncidente(echoSocket, dados);
 								// dispose();
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -143,7 +146,7 @@ public class TabelaMeusIncidentes extends JFrame {
 				}
 			}
 		});
-		getContentPane().add(excluirButton); // Adiciona o botão à direita
+		getContentPane().add(excluirButton);
 
 		setSize(473, 251);
 		setVisible(true);
@@ -153,11 +156,9 @@ public class TabelaMeusIncidentes extends JFrame {
 			if (!e.getValueIsAdjusting()) {
 				// Verifica se há alguma linha selecionada na tabela
 				if (table.getSelectedRow() != -1) {
-					// Habilita o botão de edição
 					editarButton.setEnabled(true);
 					excluirButton.setEnabled(true);
 				} else {
-					// Desabilita o botão de edição
 					editarButton.setEnabled(false);
 					excluirButton.setEnabled(false);
 				}
@@ -166,87 +167,96 @@ public class TabelaMeusIncidentes extends JFrame {
 	}
 
 	public void mostrarIncidentes(JsonArray lista_incidentes) {
-		// Limpa o modelo da tabela
-		tableModel.setRowCount(0);
+		try {
+			// Limpa o modelo da tabela
+			tableModel.setRowCount(0);
 
-		// Percorre os incidentes e adiciona ao modelo da tabela
-		for (int i = 0; i < lista_incidentes.size(); i++) {
-			JsonObject incidente = lista_incidentes.get(i).getAsJsonObject();
+			// Percorre os incidentes e adiciona ao modelo da tabela
+			for (int i = 0; i < lista_incidentes.size(); i++) {
+				JsonObject incidente = lista_incidentes.get(i).getAsJsonObject();
 
-			String id = incidente.get("id_incidente").getAsString();
-			String rodovia = incidente.get("rodovia").getAsString();
+				String id = incidente.get("id_incidente").getAsString();
+				String rodovia = incidente.get("rodovia").getAsString();
 
-			// Formatar a data para o formato certo
-			LocalDateTime dataResult = LocalDateTime.parse(incidente.get("data").getAsString(),
-					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-			String data = dataResult.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-			String km = incidente.get("km").getAsString();
-			String horario = dataResult.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-			String tipo = incidente.get("tipo_incidente").getAsString();
-			//String tipo = TipoIncidente.getMensagemFromCode(incidente.get("tipo_incidente").getAsInt());
+				// Formatar a data para o formato certo
+				LocalDateTime dataResult = LocalDateTime.parse(incidente.get("data").getAsString(),
+						DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+				String data = dataResult.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+				String km = incidente.get("km").getAsString();
+				String horario = dataResult.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+				String tipo = incidente.get("tipo_incidente").getAsString();
 
-			Object[] rowData = { id, rodovia, data, km, horario, tipo};
-			tableModel.addRow(rowData);
+				Object[] rowData = { id, rodovia, data, km, horario, tipo };
+				tableModel.addRow(rowData);
+			}
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Ocorreu um erro ao exibir os incidentes.", "Erro ao Exibir Incidentes",
+					JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
 		}
 	}
 
 	public void pegarDados(JsonArray lista_incidentes, JsonObject login) {
-		int id = Integer.parseInt(login.get("id_incidente").getAsString());
+		if (login.has("id_incidente") && !login.get("id_incidente").equals(JsonNull.INSTANCE)) {
+			int id = Integer.parseInt(login.get("id_incidente").getAsString());
+			try {
+				for (int i = 0; i < lista_incidentes.size(); i++) {
+					JsonObject incidente = lista_incidentes.get(i).getAsJsonObject();
+					String incidenteId = incidente.get("id_incidente").getAsString();
 
-		for (int i = 0; i < lista_incidentes.size(); i++) {
-			JsonObject incidente = lista_incidentes.get(i).getAsJsonObject();
-			String incidenteId = incidente.get("id_incidente").getAsString();
+					if (incidenteId.equals(Integer.toString(id))) {
+						String rodovia = incidente.get("rodovia").getAsString();
 
-			if (incidenteId.equals(Integer.toString(id))) {
-				String rodovia = incidente.get("rodovia").getAsString();
-
-				login.addProperty("id_incidente", incidenteId);
-				login.addProperty("rodovia", rodovia);
-				login.addProperty("data", incidente.get("data").getAsString());
-				login.addProperty("km", incidente.get("km").getAsString());
-				login.addProperty("tipo_incidente", incidente.get("tipo_incidente").getAsString());
-
+						login.addProperty("id_incidente", incidenteId);
+						login.addProperty("rodovia", rodovia);
+						login.addProperty("data", incidente.get("data").getAsString());
+						login.addProperty("km", incidente.get("km").getAsString());
+						login.addProperty("tipo_incidente", incidente.get("tipo_incidente").getAsString());
+					}
+				}
+			} catch (NumberFormatException e) {
+				System.err.println("Erro ao converter o ID do incidente para inteiro.");
+				e.printStackTrace();
+			} catch (Exception e) {
+				System.err.println("Ocorreu um erro ao obter os dados do incidente.");
+				e.printStackTrace();
 			}
-		}
-
+		} else
+			System.out.println("Erro ao obter o ID do incidente.");
 	}
 
 	public void excluirIncidente(Socket echoSocket, JsonObject login) {
-	    int confirm = JOptionPane.showConfirmDialog(null, "Deseja excluir o incidente?");
-	    if (confirm == JOptionPane.YES_OPTION) {
-	        try {
-	            PrintWriter saida = new PrintWriter(echoSocket.getOutputStream(), true);
-	            BufferedReader entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
-	            saida.println(login);
-	            System.out.println("ENVIADO: " + login);
+		int confirm = JOptionPane.showConfirmDialog(null, "Deseja excluir o incidente?");
+		if (confirm == JOptionPane.YES_OPTION) {
+			try {
+				PrintWriter saida = new PrintWriter(echoSocket.getOutputStream(), true);
+				BufferedReader entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+				saida.println(login);
+				System.out.println("ENVIADO: " + login);
 
-	            Gson gson = new Gson();
-	            JsonObject resposta_servidor = gson.fromJson(entrada.readLine(), JsonObject.class);
-	            if (resposta_servidor != null)
-	                System.out.println("\nRESPOSTA: " + resposta_servidor);
-	            System.out.println("************************************************************************\n");
+				Gson gson = new Gson();
+				JsonObject resposta_servidor = gson.fromJson(entrada.readLine(), JsonObject.class);
+				if (resposta_servidor != null)
+					System.out.println("\nRESPOSTA: " + resposta_servidor);
+				System.out.println("************************************************************************\n");
 
-	            // Mensagem
-	            if (Integer.parseInt(resposta_servidor.get("codigo").getAsString()) == 200) {
-	                JOptionPane.showMessageDialog(null, "Incidente excluído!");
+				if (ValidarJson.verificarCodigo(resposta_servidor)) {
+					JOptionPane.showMessageDialog(null, "Incidente excluído!");
+					// Remove a linha correspondente ao incidente excluído do modelo da tabela
+					int row = table.getSelectedRow();
+					if (row != -1) {
+						tableModel.removeRow(row);
+					}
 
-	                // Remove a linha correspondente ao incidente excluído do modelo da tabela
-	                int row = table.getSelectedRow();
-	                if (row != -1) {
-	                    tableModel.removeRow(row);
-	                }
-
-	            } else {
-	                JOptionPane.showMessageDialog(null, resposta_servidor.get("codigo").getAsString(), "Erro",
-	                        JOptionPane.ERROR_MESSAGE);
-	            }
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	    }
+				} else if (ValidarJson.verificarMensagem(resposta_servidor)) {
+					JOptionPane.showMessageDialog(null, resposta_servidor.get("mensagem").getAsString(),
+							resposta_servidor.get("codigo").getAsString(), JOptionPane.ERROR_MESSAGE);
+				}
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog(null, "Ocorreu um erro ao se comunicar com o servidor.",
+						"Erro de Comunicação", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
+			}
+		}
 	}
-
-
-
-
 }

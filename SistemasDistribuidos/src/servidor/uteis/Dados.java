@@ -1,4 +1,4 @@
-package servidor;
+package servidor.uteis;
 
 import java.time.LocalTime;
 import java.util.ArrayList;

@@ -13,12 +13,11 @@ import servidor.entidades.Cliente;
 
 public class ClienteDao {
 
-	private Connection conn;
+	private Connection conexao;
 	JsonObject retorno_servidor = new JsonObject();
 
 	public ClienteDao(Connection conn) {
-
-		this.conn = conn;
+		this.conexao = conn;
 	}
 
 	public boolean verificarEmailExiste(String email) throws SQLException {
@@ -26,7 +25,7 @@ public class ClienteDao {
 		ResultSet rs = null;
 
 		try {
-			st = conn.prepareStatement("SELECT * FROM clientes WHERE email = ?");
+			st = conexao.prepareStatement("SELECT * FROM clientes WHERE email = ?");
 			st.setString(1, email);
 			rs = st.executeQuery();
 
@@ -50,7 +49,7 @@ public class ClienteDao {
 		try {
 			// Verificar se o ID do cliente já existe
 			String query = "SELECT COUNT(*) FROM clientes WHERE id = ?";
-			st = conn.prepareStatement(query);
+			st = conexao.prepareStatement(query);
 			st.setInt(1, cliente.getId());
 			rs = st.executeQuery();
 			rs.next();
@@ -60,7 +59,7 @@ public class ClienteDao {
 
 			if (count > 0) {
 				// Atualizar os dados do cliente
-				st = conn.prepareStatement("UPDATE clientes SET nome = ?, email = ?, senha = ? WHERE id = ?");
+				st = conexao.prepareStatement("UPDATE clientes SET nome = ?, email = ?, senha = ? WHERE id = ?");
 				st.setString(1, cliente.getNome());
 				st.setString(2, cliente.getEmail());
 				st.setString(3, cliente.getSenha());
@@ -69,7 +68,7 @@ public class ClienteDao {
 				System.out.println("Dados do cliente atualizados.");
 			} else {
 				// Inserir novo cliente
-				st = conn.prepareStatement("INSERT INTO clientes (nome, email, senha, token) VALUES (?, ?, ?, ?)");
+				st = conexao.prepareStatement("INSERT INTO clientes (nome, email, senha, token) VALUES (?, ?, ?, ?)");
 				st.setString(1, cliente.getNome());
 				st.setString(2, cliente.getEmail());
 				st.setString(3, cliente.getSenha());
@@ -90,7 +89,7 @@ public class ClienteDao {
 		ResultSet rs = null;
 
 		try {
-			st = conn.prepareStatement("SELECT * FROM clientes WHERE email = ? AND senha = ?");
+			st = conexao.prepareStatement("SELECT * FROM clientes WHERE email = ? AND senha = ?");
 			st.setString(1, email);
 			st.setString(2, senha);
 
@@ -129,16 +128,12 @@ public class ClienteDao {
 		PreparedStatement st = null;
 
 		try {
-			// Gerar um novo token
+			
 			String novoToken = gerarToken();
-
-			// Atualizar o campo "token" no banco de dados
-			st = conn.prepareStatement("UPDATE clientes SET token = ? WHERE id = ?");
+			st = conexao.prepareStatement("UPDATE clientes SET token = ? WHERE id = ?");
 			st.setString(1, novoToken);
 			st.setInt(2, cliente.getId());
 			st.executeUpdate();
-
-			// Atualizar o objeto Cliente com o novo token
 			cliente.setToken(novoToken);
 		} finally {
 			BancoDados.finalizarStatement(st);
@@ -146,15 +141,15 @@ public class ClienteDao {
 	}
 
 	public String gerarToken() {
-	    String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}\\|;:'\",.<>?";
-	    Random random = new SecureRandom();
-	    int tamanho = 16 + random.nextInt(21); // Gera um número aleatório entre 16 e 36
-	    StringBuilder token = new StringBuilder(tamanho);
-	    for (int i = 0; i < tamanho; i++) {
-	        int randomIndex = random.nextInt(CHARACTERS.length());
-	        token.append(CHARACTERS.charAt(randomIndex));
-	    }
-	    return token.toString();
+		String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}\\|;:'\",.<>?";
+		Random random = new SecureRandom();
+		int tamanho = 16 + random.nextInt(21); // Gera um número aleatório entre 16 e 36
+		StringBuilder token = new StringBuilder(tamanho);
+		for (int i = 0; i < tamanho; i++) {
+			int randomIndex = random.nextInt(CHARACTERS.length());
+			token.append(CHARACTERS.charAt(randomIndex));
+		}
+		return token.toString();
 	}
 
 	public JsonObject verificarTokenCliente(JsonObject dados) throws SQLException {
@@ -162,13 +157,14 @@ public class ClienteDao {
 		ResultSet rs = null;
 
 		try {
-			st = conn.prepareStatement("SELECT * FROM clientes WHERE id = ? AND token = ?");
+			st = conexao.prepareStatement("SELECT * FROM clientes WHERE id = ? AND token = ?");
 			st.setString(1, dados.get("id_usuario").getAsString());
 			st.setString(2, dados.get("token").getAsString());
 			rs = st.executeQuery();
 
 			if (rs.next()) {
 				retorno_servidor.addProperty("codigo", 200);
+				System.out.println("Logout realizado.");
 			} else {
 				retorno_servidor.addProperty("codigo", 500);
 				String mensagem = "Os tokens nao sao iguais.";
@@ -195,7 +191,7 @@ public class ClienteDao {
 		JsonObject retorno_servidor = new JsonObject();
 
 		try {
-			st = conn.prepareStatement("UPDATE clientes SET token = ? WHERE token = ? and id = ?");
+			st = conexao.prepareStatement("UPDATE clientes SET token = ? WHERE token = ? and id = ?");
 			st.setString(1, "");
 			st.setString(2, dados.get("token").getAsString());
 			st.setInt(3, dados.get("id_usuario").getAsInt());
@@ -221,4 +217,39 @@ public class ClienteDao {
 		return retorno_servidor;
 	}
 
+	public JsonObject excluirCliente(JsonObject dados) throws SQLException {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+
+		try {
+			// Construir a consulta SQL
+			String deleteSQL = "DELETE FROM clientes WHERE email = ? AND senha = ? AND token = ? AND id = ?";
+
+			st = conexao.prepareStatement(deleteSQL);
+			st.setString(1, dados.get("email").getAsString());
+			st.setString(2, dados.get("senha").getAsString());
+			st.setString(3, dados.get("token").getAsString());
+			st.setInt(4, dados.get("id_usuario").getAsInt());
+			int rowsAffected = st.executeUpdate();
+
+			if (rowsAffected > 0) {
+				retorno_servidor.addProperty("codigo", 200);
+				System.out.println("Cliente excluido.");
+			} else {
+				retorno_servidor.addProperty("codigo", 500);
+				String mensagem = "Erro excluir o cliente. E-mail ou senha incorretos.";
+				System.out.println(mensagem);
+				retorno_servidor.addProperty("mensagem", mensagem);
+			}
+
+			return retorno_servidor;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			BancoDados.finalizarStatement(st);
+			BancoDados.finalizarResultSet(rs);
+			BancoDados.desconectar();
+		}
+		return dados;
+	}
 }

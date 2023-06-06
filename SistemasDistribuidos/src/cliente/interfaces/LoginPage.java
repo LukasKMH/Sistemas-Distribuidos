@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
@@ -39,8 +40,8 @@ public class LoginPage extends JFrame {
 	private JPasswordField passwordField;
 
 	public LoginPage(Socket echoSocket) {
+		setTitle("Login");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		System.out.println("Conectado ao servidor - LOGIN.\n");
 		setBounds(100, 100, 389, 280);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -83,8 +84,8 @@ public class LoginPage extends JFrame {
 							}
 						});
 					} else {
-						JOptionPane.showMessageDialog(null, login.get("codigo").getAsString(), "Erro",
-								JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(null, login.get("mensagem").getAsString(),
+								login.get("codigo").getAsString(), JOptionPane.ERROR_MESSAGE);
 					}
 
 				} catch (JsonSyntaxException | IOException e1) {
@@ -138,28 +139,30 @@ public class LoginPage extends JFrame {
 		}
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("id_operacao", 3);
+
 		jsonObject.addProperty("email", txtEmail.getText());
-		//Pre-definido
+		String senha = CaesarCrypt.encrypt(new String(passwordField.getPassword()));
+		jsonObject.addProperty("senha", senha);
+
+		// Pre-definido
 		jsonObject.addProperty("email", "lukaskenji@gmail.com");
 		jsonObject.addProperty("senha", "t}si{9:;");
-		
-		//Pega e entrada sem criptografia
-		//jsonObject.addProperty("senha", new String(passwordField.getPassword()));
-
-		//Usando criptografia
-//		String senha = CaesarCrypt.encrypt(new String(passwordField.getPassword()));
-//		jsonObject.addProperty("senha", senha);
 
 		saida.println(jsonObject);
 		System.out.println("ENVIADO: " + jsonObject);
-
 		Gson gson = new Gson();
-		JsonObject resposta_servidor = gson.fromJson(entrada.readLine(), JsonObject.class);
-		if (resposta_servidor != null)
-			System.out.println("\nRESPOSTA: " + resposta_servidor);
-		System.out.println("************************************************************************\n");
-
-		return resposta_servidor;
+		try {
+			JsonObject resposta_servidor = gson.fromJson(entrada.readLine(), JsonObject.class);
+			if (resposta_servidor != null)
+				System.out.println("\nRESPOSTA: " + resposta_servidor);
+			System.out.println("************************************************************************\n");
+			return resposta_servidor;
+		} catch (JsonSyntaxException | IOException e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "Erro ao receber resposta do servidor", "Erro",
+					JOptionPane.ERROR_MESSAGE);
+			return null;
+		}
 
 	}
 

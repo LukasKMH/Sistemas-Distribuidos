@@ -25,6 +25,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import cliente.interfaces.HomePage;
+import servidor.uteis.ValidarJson;
 
 import javax.swing.JComboBox;
 import java.awt.Font;
@@ -99,7 +100,7 @@ public class ListarIncidentesPage extends JFrame {
 		contentPane.add(comboBoxPeriodo);
 
 		JButton btnReportar = new JButton("Listar");
-		btnReportar.setFont(new Font("Arial", Font.PLAIN, 14));
+		btnReportar.setFont(new Font("Arial", Font.BOLD, 16));
 		btnReportar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JsonObject respostaServidor = reportarIncidente(echoSocket);
@@ -164,58 +165,64 @@ public class ListarIncidentesPage extends JFrame {
 	}
 
 	private JsonObject reportarIncidente(Socket echoSocket) {
-//		String data = txtData.getText();
-//		String faixaKmInicial = txtFaixaKmInicial.getText();
-//		String faixaKmFinal = txtFaixaKmFinal.getText();
-//		String periodo = comboBoxPeriodo.getSelectedItem().toString();
 
 		try {
 			saida = new PrintWriter(echoSocket.getOutputStream(), true);
 			entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+			JsonObject jsonObject = new JsonObject();
+			jsonObject.addProperty("id_operacao", 5);
+
+			// Inserir dados
+			jsonObject.addProperty("rodovia", txtRodovia.getText());
+			jsonObject.addProperty("data", txtData.getText() + " 00:00:00");
+			String faixa_km;
+			if (txtFaixaKmInicial.getText().isEmpty() || txtFaixaKmFinal.getText().isEmpty())
+				faixa_km = "";
+			else
+				faixa_km = txtFaixaKmInicial.getText() + "-" + txtFaixaKmFinal.getText();
+			jsonObject.addProperty("faixa_km", faixa_km);
+			jsonObject.addProperty("periodo", comboBoxPeriodo.getSelectedIndex() + 1);
+
+			// Dados pre definiods
+//			jsonObject.addProperty("rodovia", "BR-111");
+//			jsonObject.addProperty("data", "2023-05-31 00:00:00");
+//			jsonObject.addProperty("faixa_km", "");
+//			jsonObject.addProperty("periodo", "3");
+
+			saida.println(jsonObject);
+			System.out.println("ENVIADO: " + jsonObject);
+			return receberResposta(echoSocket);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Ocorreu um erro ao se comunicar com o servidor.",
+					"Erro de Comunicação", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
-		JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("id_operacao", 5);
+		return null;
 
-		// Dados pre definiods
-		jsonObject.addProperty("rodovia", "BR-111");
-		jsonObject.addProperty("data", "2023-05-31 00:00:00");
-		jsonObject.addProperty("faixa_km", "");
-		jsonObject.addProperty("periodo", "3");
-		
-		// Inserir dados
-		jsonObject.addProperty("rodovia", txtRodovia.getText());
-		jsonObject.addProperty("data", txtData.getText() + " 00:00:00");
-		//jsonObject.addProperty("faixa_km", txtFaixaKmInicial.getText() + "-" + txtFaixaKmFinal.getText());
-		jsonObject.addProperty("periodo", comboBoxPeriodo.getSelectedIndex() + 1);
-		
-		saida.println(jsonObject);
-		System.out.println("ENVIADO: " + jsonObject);
-		return receberResposta(echoSocket);
 	}
 
 	private JsonObject receberResposta(Socket echoSocket) {
 		try {
 			Gson gson = new Gson();
-			JsonObject respostaServidor = gson.fromJson(entrada.readLine(), JsonObject.class);
+			JsonObject resposta_servidor = gson.fromJson(entrada.readLine(), JsonObject.class);
 
-			if (respostaServidor != null) {
-				System.out.println("\nRESPOSTA: " + respostaServidor);
+			if (resposta_servidor != null) {
+				System.out.println("\nRESPOSTA: " + resposta_servidor);
 			}
 			System.out.println("************************************************************************\n");
 
 			// Mensagem
-			if (respostaServidor.has("codigo") && respostaServidor.get("codigo").getAsInt() == 200) {
-				// JOptionPane.showMessageDialog(null, "Incidentes listados!");
-				return respostaServidor;
-			} else {
-				JOptionPane.showMessageDialog(null, respostaServidor.get("mensagem").getAsString(), "Erro", JOptionPane.ERROR_MESSAGE);
-				return null;
+			if (ValidarJson.verificarCodigo(resposta_servidor)) {
+				return resposta_servidor;
+			} else if (ValidarJson.verificarMensagem(resposta_servidor)) {
+				JOptionPane.showMessageDialog(null, resposta_servidor.get("mensagem").getAsString(),
+						resposta_servidor.get("codigo").getAsString(), JOptionPane.ERROR_MESSAGE);
+				return resposta_servidor;
 			}
 
 		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Ocorreu um erro ao se comunicar com o servidor.",
+					"Erro de Comunicação", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 		return null;

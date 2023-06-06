@@ -4,6 +4,8 @@ import java.net.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.Scanner;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
@@ -12,6 +14,8 @@ import servidor.dao.ClienteDao;
 import servidor.dao.IncidenteDao;
 import servidor.entidades.Cliente;
 import servidor.entidades.Incidente;
+import servidor.uteis.ValidarDados;
+import servidor.uteis.ValidarJson;
 
 import java.io.*;
 
@@ -19,44 +23,34 @@ public class EchoServidor extends Thread {
 	protected Socket clientSocket;
 	PrintWriter out = null;
 	BufferedReader in = null;
+	String mensagem;
 
-	public static void main(String[] args) throws IOException {
-		ServerSocket servidor = null;
+	public static void main(String[] args) {
 		int porta = 24001;
-		try {
+		// Ler a porta digitada pelo usuário
+		// Scanner scanner = new Scanner(System.in);
+		// System.out.print("Digite o numero da porta: ");
+		// porta = scanner.nextInt();
+		try (ServerSocket servidor = new ServerSocket(porta)) {
+			System.out.println("Socket de conexao criado.");
+			System.out.println("Aguardando conexao...");
 
-			servidor = new ServerSocket(porta);
-
-			System.out.println("Connection Socket Created");
-			try {
-				while (true) {
-					System.out.println("Esperando pela conexao.");
-					new EchoServidor(servidor.accept());
-				}
-			} catch (IOException e) {
-				System.err.println("Accept failed.");
-				System.exit(1);
+			while (true) {
+				new EchoServidor(servidor.accept());
 			}
 		} catch (IOException e) {
-			System.err.println("Could not listen on port: " + porta + ".");
-			System.exit(1);
-		} finally {
-			try {
-				servidor.close();
-			} catch (IOException e) {
-				System.err.println("Could not close port: 10008.");
-				System.exit(1);
-			}
+			System.err.println("Erro ao iniciar o servidor: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
-	public EchoServidor(Socket clientSoc) {
-		clientSocket = clientSoc;
+	public EchoServidor(Socket echoSocket) {
+		clientSocket = echoSocket;
 		start();
 	}
 
 	public void run() {
-		System.out.println("New Communication Thread Started.\n");
+		System.out.println("Nova Thread de Comunicacao Iniciada.\n");
 
 		try {
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -67,8 +61,6 @@ public class EchoServidor extends Thread {
 
 			while ((entrada_cliente = in.readLine()) != null) {
 				String retorno_cliente = "";
-				Cliente cliente = new Cliente();
-				Incidente incidente = new Incidente();
 				JsonObject jsonObject = new JsonObject();
 				Connection conexao = null;
 				// Imprime o json
@@ -76,52 +68,74 @@ public class EchoServidor extends Thread {
 				Gson gson = new Gson();
 				JsonObject dados = gson.fromJson(entrada_cliente, JsonObject.class);
 
-				if (dados.has("id_operacao") && !dados.get("id_operacao").equals(JsonNull.INSTANCE)) {
+				if (dados != null && dados.has("id_operacao") && !dados.get("id_operacao").equals(JsonNull.INSTANCE)) {
 					int operacao = dados.get("id_operacao").getAsInt();
 					switch (operacao) {
 					// Resto do código do switch case
 					case 1:
 					case 2:
-						cliente.setNome(dados.get("nome").getAsString());
-						cliente.setEmail(dados.get("email").getAsString());
-						cliente.setSenha(dados.get("senha").getAsString());
-						cliente.setToken("");
-						if (operacao == 2)
-							cliente.setId(Integer.parseInt(dados.get("id_usuario").getAsString()));
-
-						jsonObject = ValidarDados.validarDadosCadastro(cliente, conexao);
-
+						jsonObject = ValidarJson.verificarCamposCadastro(dados);
 						if (jsonObject.get("codigo").getAsInt() == 200) {
-							// Conecta com o banco de dados
-							conexao = BancoDados.conectar();
-							new ClienteDao(conexao).cadastrar(cliente);
+							Cliente cliente = new Cliente();
+							cliente.setNome(dados.get("nome").getAsString());
+							cliente.setEmail(dados.get("email").getAsString());
+							cliente.setSenha(dados.get("senha").getAsString());
+							cliente.setToken("");
 
 							if (operacao == 2) {
-								conexao = BancoDados.conectar();
-								jsonObject = new ClienteDao(conexao).fazerLogin(cliente.getEmail(), cliente.getSenha());
+								if (dados != null && dados.has("id_usuario") && !dados.get("id_usuario").isJsonNull()) {
+									cliente.setId(Integer.parseInt(dados.get("id_usuario").getAsString()));
+								} else {
+									jsonObject.addProperty("codigo", 500);
+								}
 							}
+
+							if (jsonObject.get("codigo").getAsInt() == 200)
+								jsonObject = ValidarDados.validarDadosCadastro(cliente, conexao);
+
+							if (jsonObject.get("codigo").getAsInt() == 200) {
+								conexao = BancoDados.conectar();
+								new ClienteDao(conexao).cadastrar(cliente);
+
+								if (operacao == 2) {
+									conexao = BancoDados.conectar();
+									jsonObject = new ClienteDao(conexao).fazerLogin(cliente.getEmail(),
+											cliente.getSenha());
+									jsonObject.remove("id_usuario");
+								}
+							}
+
 						}
+
 						break;
 
 					case 3:
-						conexao = BancoDados.conectar();
-						jsonObject = new ClienteDao(conexao).fazerLogin(dados.get("email").getAsString(),
-								dados.get("senha").getAsString());
-						if (jsonObject.get("codigo").getAsInt() == 200)
-							logado = true;
+						jsonObject = ValidarJson.verificarCamposLogin(dados);
+						if (jsonObject.get("codigo").getAsInt() == 200) {
+							conexao = BancoDados.conectar();
+							jsonObject = new ClienteDao(conexao).fazerLogin(dados.get("email").getAsString(),
+									dados.get("senha").getAsString());
+							if (jsonObject.get("codigo").getAsInt() == 200)
+								logado = true;
+						}
+
 						break;
 
 					case 4:
 					case 10:
-						jsonObject = ValidarDados.validarDadosIncidente(dados);
+						jsonObject = ValidarJson.verificarCamposIncidente(dados);
 						if (jsonObject.get("codigo").getAsInt() == 200) {
-							incidente = new Incidente(dados);
-							if (operacao == 10)
-								incidente.setId(Integer.parseInt(dados.get("id_incidente").getAsString()));
-							conexao = BancoDados.conectar();
-							jsonObject = new IncidenteDao(conexao).reportarIncidente(incidente);
-						}
+							Incidente incidente = new Incidente();
+							jsonObject = ValidarDados.validarDadosIncidente(dados);
+							if (jsonObject.get("codigo").getAsInt() == 200) {
+								incidente = new Incidente(dados);
+								if (operacao == 10)
+									incidente.setId(Integer.parseInt(dados.get("id_incidente").getAsString()));
+								conexao = BancoDados.conectar();
+								jsonObject = new IncidenteDao(conexao).reportarIncidente(incidente);
+							}
 
+						}
 						break;
 
 					case 5:
@@ -147,6 +161,11 @@ public class EchoServidor extends Thread {
 						jsonObject = new IncidenteDao(conexao).excluirIncidente(dados);
 						break;
 
+					case 8:
+						conexao = BancoDados.conectar();
+						jsonObject = new ClienteDao(conexao).excluirCliente(dados);
+						break;
+
 					case 9:
 						if (logado && dados != null) {
 							jsonObject = ValidarDados.validarToken(dados, conexao);
@@ -154,7 +173,6 @@ public class EchoServidor extends Thread {
 							if (jsonObject.get("codigo").getAsInt() == 200) {
 								conexao = BancoDados.conectar();
 								jsonObject = new ClienteDao(conexao).fazerLogout(dados);
-								// dados.remove("token");
 								logado = false;
 							}
 						} else {
@@ -176,7 +194,7 @@ public class EchoServidor extends Thread {
 			in.close();
 			clientSocket.close();
 		} catch (IOException e) {
-			System.err.println("Problem with Communication Server");
+			System.err.println("Problema com o Servidor de Comunicação");
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -184,10 +202,15 @@ public class EchoServidor extends Thread {
 	}
 
 	public void retornarCliente(JsonObject jsonObject, String retorno_cliente) {
-		retorno_cliente = new Gson().toJson(jsonObject);
-		out.println(retorno_cliente);
-		System.out.println("RETORNO : " + retorno_cliente);
-		System.out.println("==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#\n");
+		try {
+			retorno_cliente = new Gson().toJson(jsonObject);
+			out.println(retorno_cliente);
+			System.out.println("RETORNO : " + retorno_cliente);
+			System.out
+					.println("==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#\n");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

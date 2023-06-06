@@ -12,6 +12,7 @@ import com.google.gson.JsonSyntaxException;
 import cliente.interfaces.icidentes.ListarIncidentesPage;
 import cliente.interfaces.icidentes.ReportarIncidenesPage;
 import cliente.interfaces.icidentes.TabelaMeusIncidentes;
+import servidor.uteis.ValidarJson;
 
 import javax.swing.JButton;
 
@@ -39,8 +40,9 @@ public class HomePage extends JFrame {
 	static BufferedReader entrada = null;
 
 	public HomePage(Socket echoSocket, JsonObject login) {
+		setTitle("Home");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 261, 326);
+		setBounds(100, 100, 414, 246);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
@@ -49,32 +51,36 @@ public class HomePage extends JFrame {
 
 		JButton btnLogout = new JButton("Logout");
 		btnLogout.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					JsonObject resposta_servidor = realizarLogout(echoSocket, login, 9);
-					if (resposta_servidor != null) {
-						EventQueue.invokeLater(new Runnable() {
-							public void run() {
-								try {
-									LoginPage frame = new LoginPage(echoSocket);
-									frame.setVisible(true);
-									frame.setLocationRelativeTo(null);
-									dispose();
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							}
-						});
-					}
+		    public void actionPerformed(ActionEvent e) {
+		        try {
+		            JsonObject resposta_servidor = realizarLogout(echoSocket, login, 9);
+		            if (resposta_servidor != null) {
+		                EventQueue.invokeLater(new Runnable() {
+		                    public void run() {
+		                        try {
+		                            LoginPage frame = new LoginPage(echoSocket);
+		                            frame.setVisible(true);
+		                            frame.setLocationRelativeTo(null);
+		                            dispose();
+		                        } catch (Exception ex) {
+		                            JOptionPane.showMessageDialog(null, "Ocorreu um erro ao retornar para pagina de Login.",
+		                                    "Erro", JOptionPane.ERROR_MESSAGE);
+		                            ex.printStackTrace();
+		                        }
+		                    }
+		                });
+		            }
 
-				} catch (JsonSyntaxException | IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
+		        } catch (JsonSyntaxException e1) {
+		            JOptionPane.showMessageDialog(null, "Ocorreu um erro ao realizar o logout.",
+		                    "Erro", JOptionPane.ERROR_MESSAGE);
+		            e1.printStackTrace();
+		        }
+		    }
 		});
+
 		btnLogout.setFont(new Font("Arial", Font.PLAIN, 14));
-		btnLogout.setBounds(49, 232, 150, 30);
+		btnLogout.setBounds(219, 150, 150, 30);
 		contentPane.add(btnLogout);
 
 		JButton btnReportarIncidentes = new JButton("Reportar incidente");
@@ -89,17 +95,20 @@ public class HomePage extends JFrame {
 							frame.setLocationRelativeTo(null);
 							dispose();
 						} catch (Exception e) {
-							e.printStackTrace();
+							JOptionPane.showMessageDialog(null, "Ocorreu um erro ao abrir a pagina de reportar incidentes.",
+		                            "Erro", JOptionPane.ERROR_MESSAGE);
+		                    e.printStackTrace();
 						}
 					}
 				});
 			}
 		});
 		btnReportarIncidentes.setFont(new Font("Arial", Font.PLAIN, 14));
-		btnReportarIncidentes.setBounds(49, 68, 150, 30);
+		btnReportarIncidentes.setBounds(30, 68, 150, 30);
 		contentPane.add(btnReportarIncidentes);
 
 		JButton btnListarIncidentes = new JButton("Listar incidentes");
+		btnListarIncidentes.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnListarIncidentes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				EventQueue.invokeLater(new Runnable() {
@@ -110,14 +119,17 @@ public class HomePage extends JFrame {
 							frame.setLocationRelativeTo(null);
 							dispose();
 						} catch (Exception e) {
+							JOptionPane.showMessageDialog(null,
+									"Ocorreu um erro ao abrir a pagina de listar incidentes.", "Erro",
+									JOptionPane.ERROR_MESSAGE);
 							e.printStackTrace();
 						}
 					}
 				});
 			}
 		});
-		btnListarIncidentes.setFont(new Font("Arial", Font.PLAIN, 14));
-		btnListarIncidentes.setBounds(49, 109, 150, 30);
+		
+		btnListarIncidentes.setBounds(30, 109, 150, 30);
 		contentPane.add(btnListarIncidentes);
 
 		JButton btnAtualizarCadastro = new JButton("Atualizar Cadastro");
@@ -131,6 +143,9 @@ public class HomePage extends JFrame {
 							frame.setLocationRelativeTo(null);
 							dispose();
 						} catch (Exception e) {
+							JOptionPane.showMessageDialog(null,
+									"Ocorreu um erro ao abrir a pagina de atualizar de cadastro.", "Erro",
+									JOptionPane.ERROR_MESSAGE);
 							e.printStackTrace();
 						}
 					}
@@ -138,15 +153,16 @@ public class HomePage extends JFrame {
 			}
 		});
 		btnAtualizarCadastro.setFont(new Font("Arial", Font.PLAIN, 14));
-		btnAtualizarCadastro.setBounds(49, 150, 150, 30);
+		btnAtualizarCadastro.setBounds(219, 68, 150, 30);
 		contentPane.add(btnAtualizarCadastro);
 
 		JLabel lblHomePage = new JLabel("HOME PAGE");
 		lblHomePage.setFont(new Font("Tahoma", Font.PLAIN, 24));
-		lblHomePage.setBounds(60, 11, 130, 30);
+		lblHomePage.setBounds(140, 11, 130, 30);
 		contentPane.add(lblHomePage);
 
 		JButton btnMeusIncidentes = new JButton("Meus Incidentes");
+		btnMeusIncidentes.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnMeusIncidentes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -156,59 +172,89 @@ public class HomePage extends JFrame {
 							public void run() {
 								try {
 									JsonArray lista_incidentes = resposta_servidor.getAsJsonArray("lista_incidentes");
-									TabelaMeusIncidentes frame = new TabelaMeusIncidentes(echoSocket, lista_incidentes, login);
+									TabelaMeusIncidentes frame = new TabelaMeusIncidentes(echoSocket, lista_incidentes,
+											login);
 									frame.setVisible(true);
-									//dispose();
+									// dispose();
 								} catch (Exception e) {
+									JOptionPane.showMessageDialog(null,
+											"Ocorreu um erro ao abrir a tabela de meus incidentes.", "Erro",
+											JOptionPane.ERROR_MESSAGE);
 									e.printStackTrace();
 								}
 							}
 						});
 					}
-				} catch (JsonSyntaxException | IOException e1) {
-					// TODO Auto-generated catch block
+				} catch (JsonSyntaxException e1) {
+					JOptionPane.showMessageDialog(null, "Ocorreu um erro ao exibir os incidentes.", "Erro",
+							JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
 				}
 			}
 		});
-		btnMeusIncidentes.setFont(new Font("Arial", Font.PLAIN, 14));
-		btnMeusIncidentes.setBounds(49, 191, 150, 30);
+	
+		btnMeusIncidentes.setBounds(30, 150, 150, 30);
 		contentPane.add(btnMeusIncidentes);
+
+		JButton btnExcluirCadastro = new JButton("Excluir Cadastro");
+		btnExcluirCadastro.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						try {
+							ExcluirCadastroPage frame = new ExcluirCadastroPage(echoSocket, login);
+							frame.setVisible(true);
+							frame.setLocationRelativeTo(null);
+							dispose();
+						} catch (Exception e) {
+							JOptionPane.showMessageDialog(null,
+									"Ocorreu um erro ao abrir a pagina de exclusao de cadastro.", "Erro",
+									JOptionPane.ERROR_MESSAGE);
+							e.printStackTrace();
+						}
+					}
+				});
+			}
+		});
+		btnExcluirCadastro.setFont(new Font("Arial", Font.PLAIN, 14));
+		btnExcluirCadastro.setBounds(219, 109, 150, 30);
+		contentPane.add(btnExcluirCadastro);
 	}
 
-	private JsonObject realizarLogout(Socket echoSocket, JsonObject login, int operacao)
-			throws JsonSyntaxException, IOException {
+	private JsonObject realizarLogout(Socket echoSocket, JsonObject login, int operacao) {
 		try {
 			saida = new PrintWriter(echoSocket.getOutputStream(), true);
 			entrada = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			JsonObject jsonObject = new JsonObject();
+			jsonObject.addProperty("id_operacao", operacao);
+			jsonObject.addProperty("token", login.get("token").getAsString());
+			jsonObject.addProperty("id_usuario", login.get("id_usuario").getAsString());
+			saida.println(jsonObject);
+			System.out.println("ENVIADO: " + jsonObject);
+
+			Gson gson = new Gson();
+			JsonObject resposta_servidor = gson.fromJson(entrada.readLine(), JsonObject.class);
+			if (resposta_servidor != null)
+				System.out.println("\nRESPOSTA: " + resposta_servidor);
+			System.out.println("************************************************************************\n");
+
+			if (ValidarJson.verificarCodigo(resposta_servidor)) {
+				if (operacao == 9)
+			    JOptionPane.showMessageDialog(null, "Logout realizado!");
+			    return resposta_servidor;
+			} else if (ValidarJson.verificarMensagem(resposta_servidor)) {
+				if (operacao == 9)
+				JOptionPane.showMessageDialog(null, resposta_servidor.get("mensagem").getAsString(), "Erro",
+			            JOptionPane.ERROR_MESSAGE);
+			    return resposta_servidor;
+			}} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Ocorreu um erro ao se comunicar com o servidor.",
+					"Erro de Comunicação", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
-		JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("id_operacao", operacao);
-		jsonObject.addProperty("token", login.get("token").getAsString());
-		//jsonObject.addProperty("id_usuario", "ad8794dsa");
-		jsonObject.addProperty("id_usuario", login.get("id_usuario").getAsString());
-		saida.println(jsonObject);
-		System.out.println("ENVIADO: " + jsonObject);
 
-		Gson gson = new Gson();
-		JsonObject resposta_servidor = gson.fromJson(entrada.readLine(), JsonObject.class);
-		if (resposta_servidor != null)
-			System.out.println("\nRESPOSTA: " + resposta_servidor);
-		System.out.println("************************************************************************\n");
-
-		// Mensagem
-		if (Integer.parseInt(resposta_servidor.get("codigo").getAsString()) == 200) {
-			if (operacao == 9)
-				JOptionPane.showMessageDialog(null, "Logout realizado!");
-			return resposta_servidor;
-		} else if (operacao == 9) {
-			JOptionPane.showMessageDialog(null, resposta_servidor.get("mensagem").getAsString(), "Erro",
-					JOptionPane.ERROR_MESSAGE);
-		}
 		return null;
 
 	}
+
 }

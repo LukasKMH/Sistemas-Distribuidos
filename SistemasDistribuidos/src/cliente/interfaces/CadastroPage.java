@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import cliente.CaesarCrypt;
+import servidor.uteis.ValidarJson;
 
 import java.awt.Font;
 import javax.swing.JTextField;
@@ -39,7 +40,6 @@ public class CadastroPage extends JFrame {
 
 	public CadastroPage(Socket echoSocket) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		System.out.println("Conectado ao servidor - CADASTRO.\n");
 
 		setBounds(100, 100, 389, 340);
 		contentPane = new JPanel();
@@ -79,8 +79,9 @@ public class CadastroPage extends JFrame {
 							}
 						}
 					});
+				}
 			}
-			}});
+		});
 		btnLogar.setBounds(210, 267, 110, 25);
 		contentPane.add(btnLogar);
 
@@ -119,7 +120,7 @@ public class CadastroPage extends JFrame {
 		btnNewButton.setFont(new Font("Arial", Font.PLAIN, 14));
 		btnNewButton.setBounds(60, 267, 110, 25);
 		contentPane.add(btnNewButton);
-		
+
 		passwordField = new JPasswordField();
 		passwordField.setBounds(60, 215, 260, 30);
 		contentPane.add(passwordField);
@@ -149,20 +150,22 @@ public class CadastroPage extends JFrame {
 	private boolean receberResposta() {
 		try {
 			Gson gson = new Gson();
-			JsonObject respostaServidor = gson.fromJson(entrada.readLine(), JsonObject.class);
+			JsonObject resposta_servidor = gson.fromJson(entrada.readLine(), JsonObject.class);
 
-			if (respostaServidor != null) {
-				System.out.println("\nRESPOSTA: " + respostaServidor);
-				// Faça o tratamento adequado da resposta do servidor aqui
-			}
+			if (resposta_servidor != null) 
+				System.out.println("\nRESPOSTA: " + resposta_servidor);
+
 			System.out.println("************************************************************************\n");
 
-			// Mensagem
-			if (respostaServidor.has("codigo") && respostaServidor.get("codigo").getAsInt() == 200) {
+			String codigo = resposta_servidor.get("codigo").getAsString();
+			if (ValidarJson.verificarCodigo(resposta_servidor)) {
 				JOptionPane.showMessageDialog(null, "Cadastro realizado!");
 				return true;
-			} else {
-				JOptionPane.showMessageDialog(null, respostaServidor.get("mensagem").getAsString(), "Erro", JOptionPane.ERROR_MESSAGE);
+
+			} else if (ValidarJson.verificarMensagem(resposta_servidor)) {
+				JOptionPane.showMessageDialog(null, resposta_servidor.get("mensagem").getAsString(),
+						codigo, JOptionPane.ERROR_MESSAGE);
+				return false;
 			}
 
 		} catch (IOException e) {
