@@ -70,7 +70,9 @@ public class ConexaoPage extends JFrame {
 //				String ipv4 = txtIP.getText().toString();
 //				int porta = Integer.parseInt(txtPorta.getText().toString());	
 //				conectarServidor(ipv4, porta);
-				conectarServidor("127.0.0.1", 24001);
+				
+				// meu ip4 127.0.0.1
+				conectarServidor("10.20.8.198", 24001);
 			}
 		});
 

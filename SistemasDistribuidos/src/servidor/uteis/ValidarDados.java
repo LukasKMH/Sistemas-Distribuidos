@@ -146,9 +146,14 @@ public class ValidarDados {
 	}
 
 	public static boolean validarKm(JsonObject dados) {
+		try {
+			int km = dados.get("km").getAsInt();
+			return km >= 1 && km <= 999;
+		} catch (NumberFormatException e) {
+			System.out.println("O km nao e um numero.");
+			return false;
 
-		int km = dados.get("km").getAsInt();
-		return km >= 1 && km <= 999;
+		}
 	}
 
 	public static boolean validarTipoIncidente(JsonObject dados) {

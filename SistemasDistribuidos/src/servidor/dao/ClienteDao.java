@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Random;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import servidor.entidades.Cliente;
@@ -128,7 +129,7 @@ public class ClienteDao {
 		PreparedStatement st = null;
 
 		try {
-			
+
 			String novoToken = gerarToken();
 			st = conexao.prepareStatement("UPDATE clientes SET token = ? WHERE id = ?");
 			st.setString(1, novoToken);
@@ -164,7 +165,7 @@ public class ClienteDao {
 
 			if (rs.next()) {
 				retorno_servidor.addProperty("codigo", 200);
-				System.out.println("Logout realizado.");
+
 			} else {
 				retorno_servidor.addProperty("codigo", 500);
 				String mensagem = "Os tokens nao sao iguais.";
@@ -197,9 +198,10 @@ public class ClienteDao {
 			st.setInt(3, dados.get("id_usuario").getAsInt());
 			int rowsAffected = st.executeUpdate();
 
-			if (rowsAffected > 0)
+			if (rowsAffected > 0) {
 				retorno_servidor.addProperty("codigo", 200);
-			else {
+				System.out.println("Logout realizado.");
+			} else {
 				String mensagem = "Erro ao realizar Logout.";
 				retorno_servidor.addProperty("codigo", 500);
 				retorno_servidor.addProperty("mensagem", mensagem);
@@ -252,4 +254,38 @@ public class ClienteDao {
 		}
 		return dados;
 	}
+
+	public JsonArray listarClientesLogados() throws SQLException {
+	    JsonArray clientesLogados = new JsonArray();
+	    PreparedStatement st = null;
+	    ResultSet rs = null;
+	    try {
+	        // Construir a consulta SQL
+	        String selectSQL = "SELECT id, nome, email FROM clientes WHERE token != ''";
+	        st = conexao.prepareStatement(selectSQL);
+	        rs = st.executeQuery();
+
+	        while (rs.next()) {
+	            int id = rs.getInt("id");
+	            String nome = rs.getString("nome");
+	            String email = rs.getString("email");
+
+	            JsonObject cliente = new JsonObject();
+	            cliente.addProperty("id_usuario", id);
+	            cliente.addProperty("nome", nome);
+	            cliente.addProperty("email", email);
+
+	            clientesLogados.add(cliente);
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    } finally {
+	        BancoDados.finalizarStatement(st);
+	        BancoDados.finalizarResultSet(rs);
+	        BancoDados.desconectar();
+	    }
+
+	    return clientesLogados;
+	}
+
 }

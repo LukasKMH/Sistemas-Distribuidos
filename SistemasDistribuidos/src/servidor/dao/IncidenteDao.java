@@ -252,7 +252,7 @@ public class IncidenteDao {
 				System.out.println("Incidente excluido com sucesso!");
 			} else {
 				retorno_servidor.addProperty("codigo", 500);
-				mensagem = "Nao foi possível excluir o incidente. Verifique se o ID do incidente e o ID do usuário estão corretos.";
+				mensagem = "Nao foi possivel excluir o incidente. Verifique se o ID do incidente e o ID do usuario estao corretos.";
 				System.out.println(mensagem);
 				retorno_servidor.addProperty("mensagem", mensagem);
 			}

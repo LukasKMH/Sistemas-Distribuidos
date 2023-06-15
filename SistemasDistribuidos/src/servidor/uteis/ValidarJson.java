@@ -60,6 +60,76 @@ public class ValidarJson {
 		return resposta_servidor;
 	}
 
+	public static JsonObject verificarCamposListaIncidentes(JsonObject json) {
+		if (json.has("rodovia") && json.has("data") && json.has("periodo")) {
+			if (!json.get("rodovia").isJsonNull() && !json.get("data").isJsonNull() && !json.get("periodo").isJsonNull()) {
+				if (json.has("faixa_km") && json.get("faixa_km").getAsString().length() > 1) {
+					if (!json.get("faixa_km").isJsonNull())
+						resposta_servidor.addProperty("codigo", 200);
+					else {
+						resposta_servidor.addProperty("codigo", 500);
+						resposta_servidor.addProperty("mensagem", "O arquivo JSON nao deve conter campos nulos.");
+					}
+				}
+				resposta_servidor.addProperty("codigo", 200);
+			} else {
+				resposta_servidor.addProperty("codigo", 500);
+				resposta_servidor.addProperty("mensagem", "O arquivo JSON nao deve conter campos nulos.");
+			}
+		} else {
+			resposta_servidor.addProperty("codigo", 500);
+			resposta_servidor.addProperty("mensagem", "Campos obrigatorios faltando.");
+		}
+		return resposta_servidor;
+	}
+
+	public static JsonObject verificarCamposRemoverIncidente(JsonObject json) {
+		if (json.has("token") && json.has("id_incidente") && json.has("id_usuario")) {
+			if (!json.get("token").isJsonNull() && !json.get("id_incidente").isJsonNull()
+					&& !json.get("id_usuario").isJsonNull()) {
+				resposta_servidor.addProperty("codigo", 200);
+			} else {
+				resposta_servidor.addProperty("codigo", 500);
+				resposta_servidor.addProperty("mensagem", "O arquivo JSON nao deve conter campos nulos.");
+			}
+		} else {
+			resposta_servidor.addProperty("codigo", 500);
+			resposta_servidor.addProperty("mensagem", "Campos obrigatorios faltando.");
+		}
+		return resposta_servidor;
+	}
+
+	public static JsonObject verificarCamposRemoverCadastro(JsonObject json) {
+		if (json.has("email") && json.has("senha") && json.has("token") && json.has("id_usuario")) {
+			if (!json.get("email").isJsonNull() && !json.get("senha").isJsonNull() && !json.get("token").isJsonNull()
+					&& !json.get("id_usuario").isJsonNull()) {
+				resposta_servidor.addProperty("codigo", 200);
+			} else {
+				resposta_servidor.addProperty("codigo", 500);
+				resposta_servidor.addProperty("mensagem", "O arquivo JSON nao deve conter campos nulos.");
+			}
+		} else {
+			resposta_servidor.addProperty("codigo", 500);
+			resposta_servidor.addProperty("mensagem", "Campos obrigatorios faltando.");
+		}
+		return resposta_servidor;
+	}
+
+	public static JsonObject verificarCamposLogout(JsonObject json) {
+		if (json.has("token") && json.has("id_usuario")) {
+			if (!json.get("token").isJsonNull() && !json.get("id_usuario").isJsonNull()) {
+				resposta_servidor.addProperty("codigo", 200);
+			} else {
+				resposta_servidor.addProperty("codigo", 500);
+				resposta_servidor.addProperty("mensagem", "O arquivo JSON nao deve conter campos nulos.");
+			}
+		} else {
+			resposta_servidor.addProperty("codigo", 500);
+			resposta_servidor.addProperty("mensagem", "Campos obrigatorios faltando.");
+		}
+		return resposta_servidor;
+	}
+
 	public static boolean verificarCodigo(JsonObject json) {
 		if (json.has("codigo") && !json.get("codigo").equals(JsonNull.INSTANCE)
 				&& Integer.parseInt(json.get("codigo").getAsString()) == 200)

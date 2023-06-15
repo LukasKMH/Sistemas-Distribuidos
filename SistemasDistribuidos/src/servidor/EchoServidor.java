@@ -57,7 +57,6 @@ public class EchoServidor extends Thread {
 			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			// String recebida do cliente
 			String entrada_cliente;
-			Boolean logado = false;
 
 			while ((entrada_cliente = in.readLine()) != null) {
 				String retorno_cliente = "";
@@ -115,8 +114,7 @@ public class EchoServidor extends Thread {
 							conexao = BancoDados.conectar();
 							jsonObject = new ClienteDao(conexao).fazerLogin(dados.get("email").getAsString(),
 									dados.get("senha").getAsString());
-							if (jsonObject.get("codigo").getAsInt() == 200)
-								logado = true;
+
 						}
 
 						break;
@@ -140,8 +138,11 @@ public class EchoServidor extends Thread {
 
 					case 5:
 						try {
-							conexao = BancoDados.conectar();
-							jsonObject = new IncidenteDao(conexao).filtrarIncidentes(dados);
+							jsonObject = ValidarJson.verificarCamposListaIncidentes(dados);
+							if (jsonObject.get("codigo").getAsInt() == 200) {
+								conexao = BancoDados.conectar();
+								jsonObject = new IncidenteDao(conexao).filtrarIncidentes(dados);
+							}
 						} catch (ParseException e) {
 							e.printStackTrace();
 						}
@@ -149,36 +150,41 @@ public class EchoServidor extends Thread {
 
 					case 6:
 						try {
-							conexao = BancoDados.conectar();
-							jsonObject = new IncidenteDao(conexao).listarMeusIncidentes(dados);
+							jsonObject = ValidarJson.verificarCamposLogout(dados);
+							if (jsonObject.get("codigo").getAsInt() == 200) {
+								conexao = BancoDados.conectar();
+								jsonObject = new IncidenteDao(conexao).listarMeusIncidentes(dados);
+							}
 						} catch (ParseException e) {
 							e.printStackTrace();
 						}
 						break;
 
 					case 7:
-						conexao = BancoDados.conectar();
-						jsonObject = new IncidenteDao(conexao).excluirIncidente(dados);
+						jsonObject = ValidarJson.verificarCamposRemoverIncidente(dados);
+						if (jsonObject.get("codigo").getAsInt() == 200) {
+							conexao = BancoDados.conectar();
+							jsonObject = new IncidenteDao(conexao).excluirIncidente(dados);
+						}
 						break;
 
 					case 8:
-						conexao = BancoDados.conectar();
-						jsonObject = new ClienteDao(conexao).excluirCliente(dados);
+						jsonObject = ValidarJson.verificarCamposRemoverCadastro(dados);
+						if (jsonObject.get("codigo").getAsInt() == 200) {
+							conexao = BancoDados.conectar();
+							jsonObject = new ClienteDao(conexao).excluirCliente(dados);
+						}
 						break;
 
 					case 9:
-						if (logado && dados != null) {
+						jsonObject = ValidarJson.verificarCamposLogout(dados);
+						if (jsonObject.get("codigo").getAsInt() == 200) {
 							jsonObject = ValidarDados.validarToken(dados, conexao);
-
 							if (jsonObject.get("codigo").getAsInt() == 200) {
 								conexao = BancoDados.conectar();
 								jsonObject = new ClienteDao(conexao).fazerLogout(dados);
-								logado = false;
+
 							}
-						} else {
-							System.out.println("Cliente nao logado.");
-							jsonObject.addProperty("codigo", 500);
-							jsonObject.addProperty("mensagem", "Cliente nao logado");
 						}
 						break;
 					}
@@ -193,7 +199,9 @@ public class EchoServidor extends Thread {
 			out.close();
 			in.close();
 			clientSocket.close();
-		} catch (IOException e) {
+		} catch (
+
+		IOException e) {
 			System.err.println("Problema com o Servidor de Comunicação");
 
 		} catch (SQLException e) {
