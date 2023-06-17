@@ -72,7 +72,7 @@ public class ConexaoPage extends JFrame {
 //				conectarServidor(ipv4, porta);
 				
 				// meu ip4 127.0.0.1
-				conectarServidor("10.20.8.198", 24001);
+				conectarServidor("127.0.0.1", 24001);
 			}
 		});
 

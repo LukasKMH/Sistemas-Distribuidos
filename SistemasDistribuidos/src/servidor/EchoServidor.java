@@ -26,11 +26,11 @@ public class EchoServidor extends Thread {
 	String mensagem;
 
 	public static void main(String[] args) {
-		int porta = 24001;
+		int porta;
 		// Ler a porta digitada pelo usuário
-		// Scanner scanner = new Scanner(System.in);
-		// System.out.print("Digite o numero da porta: ");
-		// porta = scanner.nextInt();
+		Scanner scanner = new Scanner(System.in);
+		System.out.print("Digite o numero da porta: ");
+		porta = scanner.nextInt();
 		try (ServerSocket servidor = new ServerSocket(porta)) {
 			System.out.println("Socket de conexao criado.");
 			System.out.println("Aguardando conexao...");
