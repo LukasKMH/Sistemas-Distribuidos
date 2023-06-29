@@ -4,6 +4,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 public class Dados {
 
 	public static List<LocalTime> obterHorarios(int periodo) {
@@ -28,22 +30,21 @@ public class Dados {
 	}
 
 	public static List<Integer> separarNumeros(String texto) {
-		List<Integer> faixaKms = new ArrayList<>();
+	    List<Integer> faixaKms = new ArrayList<>();
 
-		if (texto != null && texto.contains("-")) {
-			String[] partes = texto.split("-");
-			for (String parte : partes) {
-				try {
-					int numero = Integer.parseInt(parte);
-					faixaKms.add(numero);
-				} catch (NumberFormatException e) {
-					// Caso haja algum erro na conversão, pode ser tratado aqui
-					e.printStackTrace();
-				}
-			}
-		}
+	    if (texto != null && texto.contains("-")) {
+	        String[] partes = texto.split("-");
+	        for (String parte : partes) {
+	            try {
+	                int numero = Integer.parseInt(parte);
+	                faixaKms.add(numero);
+	            } catch (NumberFormatException e) {
+	                JOptionPane.showMessageDialog(null, "Erro na conversão do número: " + parte, "Erro", JOptionPane.ERROR_MESSAGE);
+	            }
+	        }
+	    }
 
-		return faixaKms;
+	    return faixaKms;
 	}
 
 }

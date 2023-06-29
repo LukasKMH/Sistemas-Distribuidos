@@ -11,9 +11,29 @@ import java.util.regex.Pattern;
 import servidor.dao.BancoDados;
 import servidor.dao.ClienteDao;
 import servidor.entidades.Cliente;
+
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 public class ValidarDados {
+
+	public static boolean validarIdOperacao(JsonObject dados) {
+	    if (dados!= null && dados.has("id_operacao") && dados.get("id_operacao").isJsonPrimitive()) {
+	        JsonPrimitive idOperacao = dados.get("id_operacao").getAsJsonPrimitive();
+	        if (idOperacao.isNumber()) {
+	            try {
+	                int operacao = idOperacao.getAsInt();
+	                if (operacao >= 1 && operacao <= 10) {
+	                    return true;
+	                }
+	            } catch (NumberFormatException e) {
+	                return false;
+	            }
+	        }
+	    }
+	    return false;
+	}
+
 
 	public static JsonObject validarDadosCadastro(Cliente cliente, Connection conexao)
 			throws SQLException, IOException {
@@ -49,7 +69,7 @@ public class ValidarDados {
 
 		retorno_servidor.addProperty("codigo", 500);
 		retorno_servidor.addProperty("mensagem", mensagem);
-		System.out.println(mensagem);
+		System.err.println(mensagem);
 		return retorno_servidor;
 	}
 
@@ -115,7 +135,7 @@ public class ValidarDados {
 			}
 
 			resultado.addProperty("codigo", 500);
-			System.out.println(mensagem);
+			System.err.println(mensagem);
 			resultado.addProperty("mensagem", mensagem);
 			return resultado;
 		} else {
@@ -150,15 +170,99 @@ public class ValidarDados {
 			int km = dados.get("km").getAsInt();
 			return km >= 1 && km <= 999;
 		} catch (NumberFormatException e) {
-			System.out.println("O km nao e um numero.");
+			System.err.println("O km nao e um numero.");
 			return false;
-
 		}
 	}
 
 	public static boolean validarTipoIncidente(JsonObject dados) {
+		try {
+			int tipoIncidente = dados.get("tipo_incidente").getAsInt();
+			return tipoIncidente >= 1 && tipoIncidente <= 14;
+		} catch (NumberFormatException e) {
+			System.err.println("O tipo de incidente nao e um numero.");
+			return false;
+		}
 
-		int tipoIncidente = dados.get("tipo_incidente").getAsInt();
-		return tipoIncidente >= 1 && tipoIncidente <= 14;
 	}
+
+	public static JsonObject validarDadosListarIncidente(JsonObject dados) {
+		JsonObject resultado = new JsonObject();
+		if (dados != null && dados.has("rodovia") && dados.has("data") && dados.has("faixa_km")
+				&& dados.has("periodo")) {
+			String mensagem = "";
+			if (!validarRodovia(dados)) {
+				mensagem = "A rodovia deve seguir o seguinte formato: BR-123.";
+			} else if (!validarData(dados)) {
+				mensagem = "A data deve seguir o seguinte formato: yyyy-MM-dd HH:mm:ss.";
+			} else if (!validarPeriodo(dados)) {
+				mensagem = "O periodo deve estar entre 1 e 4.";
+			} else if (dados.has("faixa_km") && dados.get("faixa_km").getAsString().length() > 1
+					&& !dados.get("faixa_km").isJsonNull()) {
+				if (!validarFaixaKm(dados))
+					mensagem = "A faixa de Km de seguir o seguinte formato: NNN-NNN.";
+			} else {
+				resultado.addProperty("codigo", 200);
+				return resultado;
+			}
+
+			resultado.addProperty("codigo", 500);
+			System.err.println(mensagem);
+			resultado.addProperty("mensagem", mensagem);
+			return resultado;
+		} else {
+			resultado.addProperty("codigo", 500);
+			resultado.addProperty("mensagem", "Campos obrigatorios faltando");
+			return resultado;
+		}
+	}
+
+	public static boolean validarFaixaKm(JsonObject dados) {
+		try {
+			String km = dados.get("faixa_km").getAsString();
+
+			// Verificar o tamanho da string
+			if (km.length() < 3 || km.length() > 7) {
+				System.err.println("O tamanho da faixa de km deve estar entre 3 e 7 caracteres.");
+				return false;
+			}
+
+			// Verificar se a string contém um "-"
+			if (!km.contains("-")) {
+				System.err.println("A faixa de km deve possuir um '-'.");
+				return false;
+			}
+
+			// Validar os valores de km separadamente
+			String[] faixa = km.split("-");
+			String inicioStr = faixa[0];
+			String fimStr = faixa[1];
+
+			// Verificar se os valores são inteiros
+			if (!inicioStr.matches("\\d+") || !fimStr.matches("\\d+")) {
+				System.err.println("A faixa de km deve conter apenas numeros inteiros.");
+				return false;
+			}
+
+			int inicio = Integer.parseInt(inicioStr);
+			int fim = Integer.parseInt(fimStr);
+			return inicio >= 1 && fim <= 999;
+		} catch (NumberFormatException e) {
+			System.err
+					.println("A faixa de km não é valida. Certifique-se de que esteja no formato correto (ex: 1-999).");
+			return false;
+		}
+	}
+
+	public static boolean validarPeriodo(JsonObject dados) {
+		try {
+			int tipoIncidente = dados.get("periodo").getAsInt();
+			return tipoIncidente >= 1 && tipoIncidente <= 4;
+		} catch (NumberFormatException e) {
+			System.err.println("O periodo nao e um numero.");
+			return false;
+		}
+
+	}
+
 }

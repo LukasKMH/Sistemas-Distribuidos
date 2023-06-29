@@ -34,6 +34,9 @@ public class ClienteDao {
 				return false;
 			}
 
+		} catch (SQLException e) {
+			System.err.println("Erro ao verificar a existencia do email.");
+			retorno_servidor.addProperty("codigo", 500);
 		} finally {
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
@@ -77,6 +80,9 @@ public class ClienteDao {
 				st.executeUpdate();
 				System.out.println("Novo cliente cadastrado.");
 			}
+		} catch (SQLException e) {
+			System.err.println("Erro durante o cadastro.");
+			retorno_servidor.addProperty("codigo", 500);
 		} finally {
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
@@ -116,6 +122,9 @@ public class ClienteDao {
 				retorno_servidor.addProperty("mensagem", mensagem);
 				System.out.println(mensagem);
 			}
+		} catch (SQLException e) {
+			System.err.println("Erro ao fazer login.");
+			retorno_servidor.addProperty("codigo", 500);
 		} finally {
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
@@ -136,6 +145,9 @@ public class ClienteDao {
 			st.setInt(2, cliente.getId());
 			st.executeUpdate();
 			cliente.setToken(novoToken);
+		} catch (SQLException e) {
+			System.err.println("Erro ao inserir o token.");
+			retorno_servidor.addProperty("codigo", 500);
 		} finally {
 			BancoDados.finalizarStatement(st);
 		}
@@ -174,17 +186,13 @@ public class ClienteDao {
 			}
 
 		} catch (SQLException e) {
-			// Ocorreu um erro ao verificar o token
-			e.printStackTrace();
+			System.err.println("Erro ao verificar o token.");
 		} finally {
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
 			BancoDados.desconectar();
 		}
 		return retorno_servidor;
-
-		// Não foi possível verificar o token
-
 	}
 
 	public JsonObject fazerLogout(JsonObject dados) throws SQLException {
@@ -208,8 +216,7 @@ public class ClienteDao {
 				System.out.println(mensagem);
 			}
 		} catch (SQLException e) {
-			// Ocorreu um erro durante o logout
-			e.printStackTrace();
+			System.err.println("Erro durante o logout.");
 			retorno_servidor.addProperty("codigo", 500);
 		} finally {
 			BancoDados.finalizarStatement(st);
@@ -246,7 +253,7 @@ public class ClienteDao {
 
 			return retorno_servidor;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.err.println("Erro ao excluir o cliente.");
 		} finally {
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);
@@ -255,37 +262,95 @@ public class ClienteDao {
 		return dados;
 	}
 
+//	public JsonObject excluirCliente(JsonObject dados) throws SQLException {
+//		PreparedStatement st = null;
+//		ResultSet rs = null;
+//
+//		try {
+//			// Verificar se o cliente existe antes de excluir
+//			String selectClienteSQL = "SELECT * FROM clientes WHERE email = ? AND senha = ? AND token = ? AND id = ?";
+//			st = conexao.prepareStatement(selectClienteSQL);
+//			st.setString(1, dados.get("email").getAsString());
+//			st.setString(2, dados.get("senha").getAsString());
+//			st.setString(3, dados.get("token").getAsString());
+//			st.setInt(4, dados.get("id_usuario").getAsInt());
+//			rs = st.executeQuery();
+//
+//			if (rs.next()) {
+//				// Cliente existe, então vamos excluir
+//				String deleteClienteSQL = "DELETE FROM clientes WHERE email = ? AND senha = ? AND token = ? AND id = ?";
+//				st = conexao.prepareStatement(deleteClienteSQL);
+//				st.setString(1, dados.get("email").getAsString());
+//				st.setString(2, dados.get("senha").getAsString());
+//				st.setString(3, dados.get("token").getAsString());
+//				st.setInt(4, dados.get("id_usuario").getAsInt());
+//				int rowsAffected = st.executeUpdate();
+//
+//				if (rowsAffected > 0) {
+//					// Exclusão do cliente bem-sucedida, agora atualizamos o campo id_incidente para
+//					// null
+//					String updateIncidenteSQL = "UPDATE incidentes SET id_cliente = NULL WHERE id_cliente = ?";
+//					st = conexao.prepareStatement(updateIncidenteSQL);
+//					st.setInt(1, dados.get("id_usuario").getAsInt());
+//					st.executeUpdate();
+//
+//					retorno_servidor.addProperty("codigo", 200);
+//					System.out.println("Cliente excluído e o ID do incidente definido como null.");
+//				} else {
+//					retorno_servidor.addProperty("codigo", 500);
+//					String mensagem = "Erro ao excluir o cliente. E-mail ou senha incorretos.";
+//					System.out.println(mensagem);
+//					retorno_servidor.addProperty("mensagem", mensagem);
+//				}
+//			} else {
+//				retorno_servidor.addProperty("codigo", 500);
+//				String mensagem = "Cliente não encontrado. Verifique as informações fornecidas.";
+//				System.out.println(mensagem);
+//				retorno_servidor.addProperty("mensagem", mensagem);
+//			}
+//
+//			return retorno_servidor;
+//		} catch (SQLException e) {
+//			System.err.println("Erro ao excluir o cliente: " + e.getMessage());
+//		} finally {
+//			BancoDados.finalizarStatement(st);
+//			BancoDados.finalizarResultSet(rs);
+//			BancoDados.desconectar();
+//		}
+//		return dados;
+//	}
+
 	public JsonArray listarClientesLogados() throws SQLException {
-	    JsonArray clientesLogados = new JsonArray();
-	    PreparedStatement st = null;
-	    ResultSet rs = null;
-	    try {
-	        // Construir a consulta SQL
-	        String selectSQL = "SELECT id, nome, email FROM clientes WHERE token != ''";
-	        st = conexao.prepareStatement(selectSQL);
-	        rs = st.executeQuery();
+		JsonArray clientesLogados = new JsonArray();
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			// Construir a consulta SQL
+			String selectSQL = "SELECT id, nome, email FROM clientes WHERE token != ''";
+			st = conexao.prepareStatement(selectSQL);
+			rs = st.executeQuery();
 
-	        while (rs.next()) {
-	            int id = rs.getInt("id");
-	            String nome = rs.getString("nome");
-	            String email = rs.getString("email");
+			while (rs.next()) {
+				int id = rs.getInt("id");
+				String nome = rs.getString("nome");
+				String email = rs.getString("email");
 
-	            JsonObject cliente = new JsonObject();
-	            cliente.addProperty("id_usuario", id);
-	            cliente.addProperty("nome", nome);
-	            cliente.addProperty("email", email);
+				JsonObject cliente = new JsonObject();
+				cliente.addProperty("id_usuario", id);
+				cliente.addProperty("nome", nome);
+				cliente.addProperty("email", email);
 
-	            clientesLogados.add(cliente);
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    } finally {
-	        BancoDados.finalizarStatement(st);
-	        BancoDados.finalizarResultSet(rs);
-	        BancoDados.desconectar();
-	    }
+				clientesLogados.add(cliente);
+			}
+		} catch (SQLException e) {
+			System.err.println("Erro ao listar os clientes logados.");
+		} finally {
+			BancoDados.finalizarStatement(st);
+			BancoDados.finalizarResultSet(rs);
+			BancoDados.desconectar();
+		}
 
-	    return clientesLogados;
+		return clientesLogados;
 	}
 
 }

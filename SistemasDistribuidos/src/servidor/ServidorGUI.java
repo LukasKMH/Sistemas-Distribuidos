@@ -110,8 +110,9 @@ public class ServidorGUI extends JFrame {
 		btnIniciarServidor.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					mostrarClientesLogados();
 					iniciarServidor(Integer.parseInt(txtPorta.getText()));
+					mostrarClientesLogados();
+					btnIniciarServidor.setEnabled(false);
 				} catch (NumberFormatException | IOException | SQLException e1) {
 					JOptionPane.showMessageDialog(null, "Erro ao inicar servidor.", "Erro", JOptionPane.ERROR_MESSAGE);
 				}
@@ -137,12 +138,10 @@ public class ServidorGUI extends JFrame {
 				System.out.println("Socket de conexao criado.");
 				System.out.println("Aguardando conexao...");
 				while (true) {
-					mostrarClientesLogados();
 					new Servidor(socketServidor.accept());
 				}
 			} catch (IOException e) {
-				System.err.println("Erro ao iniciar o servidor: " + e.getMessage());
-
+				System.err.println("Erro ao iniciar o servidor");
 			}
 		});
 		serverThread.start();

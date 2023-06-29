@@ -56,6 +56,7 @@ public class IncidenteDao {
 			BancoDados.finalizarResultSet(rs);
 			BancoDados.desconectar();
 		}
+	
 	}
 
 	private JsonObject atualizarIncidente(Incidente incidente) throws SQLException {
@@ -165,17 +166,17 @@ public class IncidenteDao {
 	        retorno_servidor.add("lista_incidentes", listaIncidentes);
 
 	    } catch (SQLException e) {
-	        e.printStackTrace();
-	        // Definir código de retorno e mensagem de erro
 	        retorno_servidor.addProperty("codigo", 500);
 	        mensagem = "Ocorreu um erro na execução da consulta.";
-	        System.out.println(mensagem);
+	        System.err.println(mensagem);
 	        retorno_servidor.addProperty("mensagem", mensagem);
+	        return retorno_servidor;
 
 	    } finally {
 	        BancoDados.finalizarStatement(st);
 	        BancoDados.finalizarResultSet(rs);
 	        BancoDados.desconectar();
+	        
 	    }
 
 	    return retorno_servidor;
@@ -198,18 +199,13 @@ public class IncidenteDao {
 	            // Construir o objeto JSON com os dados do incidente
 	            JsonObject incidenteJson = new JsonObject();
 	            incidenteJson.addProperty("id_incidente", rs.getInt("id"));
-
 	            LocalDateTime data = rs.getTimestamp("data").toLocalDateTime();
 	            String dataFormatada = data.format(formatter);
 	            incidenteJson.addProperty("data", dataFormatada);
-
 	            incidenteJson.addProperty("rodovia", rs.getString("rodovia"));
 	            incidenteJson.addProperty("km", rs.getInt("km"));
 	            int tipoCodigo = rs.getInt("tipo_incidente");
 	            incidenteJson.addProperty("tipo_incidente", tipoCodigo);
-	            //incidenteJson.addProperty("tipo_incidente", TipoIncidente.getMensagemFromCode(tipoCodigo));
-
-	            // Adicionar o objeto JSON à lista de incidentes
 	            listaIncidentes.add(incidenteJson);
 	        }
 
@@ -218,10 +214,9 @@ public class IncidenteDao {
 	        System.out.println("Lista de incidentes reportadas pelo usuario.");
 
 	    } catch (SQLException e) {
-	        e.printStackTrace();
 	        retorno_servidor.addProperty("codigo", 500);
 	        mensagem = "Erro ao listar os incidentes do usuário.";
-	        System.out.println(mensagem);
+	        System.err.println(mensagem);
 	        retorno_servidor.addProperty("mensagem", mensagem);
 
 	    } finally {
@@ -259,7 +254,7 @@ public class IncidenteDao {
 
 			return retorno_servidor;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.err.println("Erro ao excluir incidente.");
 		} finally {
 			BancoDados.finalizarStatement(st);
 			BancoDados.finalizarResultSet(rs);

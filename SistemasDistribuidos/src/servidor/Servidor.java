@@ -12,8 +12,8 @@ import java.text.ParseException;
 import javax.swing.SwingUtilities;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 import servidor.dao.BancoDados;
 import servidor.dao.ClienteDao;
@@ -30,13 +30,14 @@ public class Servidor extends Thread {
 	PrintWriter out = null;
 	BufferedReader in = null;
 	String mensagem;
+	static ServidorGUI servidor;
 
 	public static void main(String[] args) {
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					ServidorGUI servidor = new ServidorGUI();
+					servidor = new ServidorGUI();
 					servidor.setVisible(true);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -58,7 +59,6 @@ public class Servidor extends Thread {
 			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			// String recebida do cliente
 			String entrada_cliente;
-
 			while ((entrada_cliente = in.readLine()) != null) {
 				String retorno_cliente = "";
 				JsonObject jsonObject = new JsonObject();
@@ -68,7 +68,7 @@ public class Servidor extends Thread {
 				Gson gson = new Gson();
 				JsonObject dados = gson.fromJson(entrada_cliente, JsonObject.class);
 
-				if (dados != null && dados.has("id_operacao") && !dados.get("id_operacao").equals(JsonNull.INSTANCE)) {
+				if (dados != null && ValidarDados.validarIdOperacao(dados)) {
 					int operacao = dados.get("id_operacao").getAsInt();
 					switch (operacao) {
 					// Resto do código do switch case
@@ -102,6 +102,7 @@ public class Servidor extends Thread {
 									jsonObject = new ClienteDao(conexao).fazerLogin(cliente.getEmail(),
 											cliente.getSenha());
 									jsonObject.remove("id_usuario");
+									// servidor.mostrarClientesLogados();
 								}
 							}
 
@@ -115,7 +116,7 @@ public class Servidor extends Thread {
 							conexao = BancoDados.conectar();
 							jsonObject = new ClienteDao(conexao).fazerLogin(dados.get("email").getAsString(),
 									dados.get("senha").getAsString());
-
+							// servidor.mostrarClientesLogados();
 						}
 
 						break;
@@ -141,11 +142,14 @@ public class Servidor extends Thread {
 						try {
 							jsonObject = ValidarJson.verificarCamposListaIncidentes(dados);
 							if (jsonObject.get("codigo").getAsInt() == 200) {
-								conexao = BancoDados.conectar();
-								jsonObject = new IncidenteDao(conexao).filtrarIncidentes(dados);
+								jsonObject = ValidarDados.validarDadosListarIncidente(dados);
+								if (jsonObject.get("codigo").getAsInt() == 200) {
+									conexao = BancoDados.conectar();
+									jsonObject = new IncidenteDao(conexao).filtrarIncidentes(dados);
+								}
 							}
 						} catch (ParseException e) {
-							e.printStackTrace();
+							System.err.println("Erro ao solicitar lista de incidentes.");
 						}
 						break;
 
@@ -157,7 +161,7 @@ public class Servidor extends Thread {
 								jsonObject = new IncidenteDao(conexao).listarMeusIncidentes(dados);
 							}
 						} catch (ParseException e) {
-							e.printStackTrace();
+							System.err.println("Erro ao ao exibir lista de incidentes do usuario.");
 						}
 						break;
 
@@ -174,6 +178,7 @@ public class Servidor extends Thread {
 						if (jsonObject.get("codigo").getAsInt() == 200) {
 							conexao = BancoDados.conectar();
 							jsonObject = new ClienteDao(conexao).excluirCliente(dados);
+							// servidor.mostrarClientesLogados();
 						}
 						break;
 
@@ -184,15 +189,15 @@ public class Servidor extends Thread {
 							if (jsonObject.get("codigo").getAsInt() == 200) {
 								conexao = BancoDados.conectar();
 								jsonObject = new ClienteDao(conexao).fazerLogout(dados);
-
+								// servidor.mostrarClientesLogados();
 							}
 						}
 						break;
 					}
 				} else {
-					System.out.println("Operacao nula.");
+					System.err.println("Operacao nao suportada.");
 					jsonObject.addProperty("codigo", 500);
-					jsonObject.addProperty("mensagem", "Operacao nula");
+					jsonObject.addProperty("mensagem", "Operacao nao suportada");
 				}
 				retornarCliente(jsonObject, retorno_cliente);
 			}
@@ -200,14 +205,26 @@ public class Servidor extends Thread {
 			out.close();
 			in.close();
 			clientSocket.close();
-		} catch (
-
-		IOException e) {
+		} catch (IOException e) {
 			System.err.println("Problema com o Servidor de Comunicacao");
-
 		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+			System.err.println("Problema ao se conectar com o Banco de Dados.");
+		} catch (JsonSyntaxException e) {
+			System.err.println("O conteudo nao e um Json valido");
+			JsonObject jsonObject = new JsonObject();
+			String retorno_cliente = "";
+			jsonObject.addProperty("codigo", 500);
+			jsonObject.addProperty("mensagem", "O conteudo nao e um Json valido.");
+			retornarCliente(jsonObject, retorno_cliente);
+		} catch (NumberFormatException e) {
+	    System.err.println("Valor invalido para id_operacao.");
+	    JsonObject jsonObject = new JsonObject();
+		String retorno_cliente = "";
+	    jsonObject.addProperty("codigo", 500);
+	    jsonObject.addProperty("mensagem", "Valor invalido para id_operacao");
+	    retornarCliente(jsonObject, retorno_cliente);
+	}
+		
 	}
 
 	public void retornarCliente(JsonObject jsonObject, String retorno_cliente) {
@@ -218,7 +235,7 @@ public class Servidor extends Thread {
 			System.out
 					.println("==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#==#\n");
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println("Erro receber resposta do servidor.");
 		}
 	}
 
